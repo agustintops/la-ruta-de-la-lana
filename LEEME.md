@@ -68,9 +68,10 @@ Después de guardarla hay que volver a publicar. Para cambiar la clave se edita 
 
 ## Enlaces para un público o un envío
 
-Al enlace del juego se le pueden agregar dos datos:
+Al enlace del juego se le pueden agregar estos datos (en el tablero hay un armador que lo hace solo):
 
 - `?perfil=` fija el público y saltea la elección: `chico`, `grande`, `productor`, `trabajador`, `esquilador`, `consignatario`, `industria`, `tecnico`.
+- `?modo=` fija cómo se juega: `individual`, `grupo` (todos juntos, sin equipos) o `equipos` (todos juntos, en dos equipos).
 - `?envio=` pone una etiqueta para ver ese envío por separado en el tablero.
 
 Ejemplo: `https://ruta-de-la-lana.netlify.app/?perfil=productor&envio=remate-marzo`

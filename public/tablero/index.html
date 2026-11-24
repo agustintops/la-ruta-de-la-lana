@@ -106,6 +106,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
         <h2>Armar un enlace</h2><p class="nota">Elegí a quién va y poné un nombre al envío para verlo después en "Por envío".</p>
         <div class="campos">
           <label>Público <select id="lperfil"><option value="">Abierto: cada uno elige</option><option value="chico">Soy chico</option><option value="grande">Soy grande</option><option value="productor">Productor</option><option value="trabajador">Trabajador rural</option><option value="esquilador">Esquilador</option><option value="consignatario">Consignatario</option><option value="industria">Industria</option><option value="tecnico">Técnico</option></select></label>
+          <label>Cómo juegan <select id="lmodo"><option value="">Lo eligen al entrar</option><option value="individual">Cada uno en su pantalla</option><option value="grupo">Todos juntos, sin equipos</option><option value="equipos">Todos juntos, en dos equipos</option></select></label>
           <label>Nombre del envío (opcional) <input id="lenvio" type="text" maxlength="60" placeholder="remate-marzo" autocomplete="off"></label>
         </div>
         <div class="enlace"><input id="lurl" type="text" readonly aria-label="Enlace armado"><button class="btn lleno" id="lcopiar">Copiar</button></div>
@@ -284,7 +285,7 @@ document.addEventListener("mousemove",function(e){
 function etiqueta(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)}
 function enlace(){
   var q=[],p=$("lperfil").value,e=etiqueta($("lenvio").value);
-  if(p)q.push("perfil="+p);if(e)q.push("envio="+e);
+  if(p)q.push("perfil="+p);if($("lmodo").value)q.push("modo="+$("lmodo").value);if(e)q.push("envio="+e);
   var u=location.origin+"/"+(q.length?"?"+q.join("&"):"");
   $("lurl").value=u;
   $("lnota").textContent=e&&e!==$("lenvio").value?'En el tablero va a figurar como "'+e+'".':"";
@@ -292,7 +293,7 @@ function enlace(){
   $("lqr").innerHTML=c.createSvgTag({cellSize:4,margin:0,scalable:true});
   return {u:u,c:c,n:e||p||"abierto"};
 }
-$("lperfil").addEventListener("change",enlace);$("lenvio").addEventListener("input",enlace);
+$("lperfil").addEventListener("change",enlace);$("lmodo").addEventListener("change",enlace);$("lenvio").addEventListener("input",enlace);
 $("lurl").addEventListener("focus",function(){this.select()});
 $("lcopiar").addEventListener("click",function(){
   var b=this,u=enlace().u,ok=function(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar"},1600)};
