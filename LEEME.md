@@ -54,3 +54,14 @@ Para que el avance de alguien quede a su nombre sin que escriba nada:
 - En modo individual: el perfil elegido y el avance. Nombre y correo solo si la persona los escribe y marca la casilla de aceptación.
 - En modo grupo: el nombre del grupo y la cantidad de personas.
 - Nunca se guardan datos personales de niños.
+
+## Tablero de impacto
+
+Está en `/tablero` (por ejemplo `https://ruta-de-la-lana.netlify.app/tablero`). Muestra personas alcanzadas, partidas, diplomas, perfiles, sellos por estación, juegos, las preguntas que más cuestan y las personas registradas.
+
+Pide una clave. Se define en Netlify, en "Keys and secrets", con una variable nueva:
+
+- Nombre: `TABLERO_CLAVE`
+- Valor: la clave que elijan (marcar "Contains secret values")
+
+Después de guardarla hay que volver a publicar. Para cambiar la clave se edita esa variable y se publica de nuevo.
