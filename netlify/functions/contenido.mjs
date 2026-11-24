@@ -47,7 +47,10 @@ export default async () => {
       const c = letra.length === 1 ? "ABCD".indexOf(letra) : -1;
       // Las filas incompletas se descartan en vez de romper el juego.
       if (!p.id || !p.categoria || !p.pregunta || o.length < 2 || c < 0 || c >= o.length) continue;
+      // Por qué no es cada opción equivocada (alineado con las opciones) y la explicación sencilla para chicos.
+      const n = ["a", "b", "c", "d"].filter((l) => p["opcion_" + l]).map((l) => (p["por_que_no_" + l] || "").trim());
       preguntas.push({ id: p.id, cat: p.categoria, t: p.titulo, q: p.pregunta, o, c, e: p.explicacion, f: p.fuente,
+        n: n.some(Boolean) ? n : undefined, ec: (p.explicacion_chicos || "").trim() || undefined,
         p: (p.perfiles || "").split(",").map((x) => x.trim()).filter(Boolean) });
     }
     const recorridos = {};

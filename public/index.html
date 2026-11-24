@@ -30,7 +30,7 @@ p{margin:0}
 .bajada{margin-top:6px;color:var(--lana-2);max-width:54ch}
 button{font-family:var(--cuerpo);font-size:16px;cursor:pointer;color:inherit}
 button:focus-visible,a:focus-visible{outline:3px solid var(--ambar);outline-offset:3px}
-[hidden]{display:none!important}
+.explica .pq{display:block;margin-top:8px}.explica .pq:first-of-type{margin-top:0}[hidden]{display:none!important}
 .pastilla{background:transparent;border:2px solid rgba(243,238,224,.35);border-radius:999px;padding:7px 16px;font-weight:700;color:var(--lana-2)}
 .accion{background:var(--verde);color:var(--tinta);border:0;border-radius:999px;padding:11px 22px;font-weight:700;box-shadow:0 4px 0 #2b7a4b;text-decoration:none;display:inline-block}
 .accion:active{transform:translateY(3px);box-shadow:0 1px 0 #2b7a4b}
@@ -317,7 +317,8 @@ function quiz(){
     h+='<button class="op'+cl+'" type="button" data-o="'+i+'"'+(Q.elegida!=null?" disabled":"")+'><b>'+letras[pos]+'</b><span>'+esc(o)+'</span></button>'});
   h+='</div>';
   if(Q.elegida!=null){var ok=Q.elegida===q.c;
-    h+='<div class="explica'+(ok?"":" mal")+'"><strong>'+(ok?"Correcto":"No era esa")+'</strong>'+esc(q.e)+'<small>Fuente: '+esc(q.f)+' · Pregunta '+q.id+'</small></div><div class="fila"><button class="accion" type="button" data-ir="sigue" id="sigue">'+(Q.i<Q.lista.length-1?"Siguiente":"Ver resultado")+'</button></div>'}
+    var ex=(S.perfil==="Niño o adolescente"&&q.ec)?q.ec:q.e,pn=q.n&&q.n[Q.elegida];
+    h+='<div class="explica'+(ok?"":" mal")+'"><strong>'+(ok?"Correcto":"No era esa")+'</strong>'+(ok?esc(ex):(pn?'<span class="pq"><b>Elegiste «'+esc(q.o[Q.elegida])+'».</b> '+esc(pn)+'</span>':'')+'<span class="pq"><b>La correcta era «'+esc(q.o[q.c])+'».</b> '+esc(ex)+'</span>')+'<small>Fuente: '+esc(q.f)+' · Pregunta '+q.id+'</small></div><div class="fila"><button class="accion" type="button" data-ir="sigue" id="sigue">'+(Q.i<Q.lista.length-1?"Siguiente":"Ver resultado")+'</button></div>'}
   return h+'</section>';
 }
 function resultado(){
