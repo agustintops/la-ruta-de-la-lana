@@ -107,6 +107,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
           <button class="btn" id="csv">Descargar CSV</button></div>
         <div id="personas" class="tabla"></div>
       </div>
+      <div class="panel ancho"><h2>Por envío</h2><p class="nota">Partidas según la etiqueta del enlace (<code>?envio=</code>). "Sin etiqueta" son las que entraron por el enlace común.</p><div id="envios" class="tabla"></div></div>
       <div class="panel ancho"><h2>Grupos</h2><p class="nota">Partidas jugadas en modo grupo.</p><div id="grupos" class="tabla"></div></div>
     </div>
   </section>
@@ -191,6 +192,12 @@ function pintar(){
     {t:"Diploma",f:function(p){return p.diploma?"Sí":"No"}}
   ],D.personas);
 
+  tabla($("envios"),[
+    {t:"Envío",f:function(v){return esc(v.envio)}},
+    {t:"Partidas",n:1,f:function(v){return num(v.partidas)}},
+    {t:"Con sello",n:1,f:function(v){return num(v.con_sello)+" · "+pct(v.con_sello,v.partidas)}},
+    {t:"Diplomas",n:1,f:function(v){return num(v.diplomas)+" · "+pct(v.diplomas,v.partidas)}}
+  ],D.envios||[]);
   tabla($("grupos"),[
     {t:"Grupo",f:function(g){return esc(g.grupo||"Sin nombre")}},
     {t:"Personas",n:1,f:function(g){return g.tam_grupo?num(g.tam_grupo):"–"}},

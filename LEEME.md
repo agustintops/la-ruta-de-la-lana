@@ -65,3 +65,12 @@ Pide una clave. Se define en Netlify, en "Keys and secrets", con una variable nu
 - Valor: la clave que elijan (marcar "Contains secret values")
 
 Después de guardarla hay que volver a publicar. Para cambiar la clave se edita esa variable y se publica de nuevo.
+
+## Enlaces para un público o un envío
+
+Al enlace del juego se le pueden agregar dos datos:
+
+- `?perfil=` fija el público y saltea la elección: `chico`, `grande`, `productor`, `trabajador`, `esquilador`, `consignatario`, `industria`, `tecnico`.
+- `?envio=` pone una etiqueta para ver ese envío por separado en el tablero.
+
+Ejemplo: `https://ruta-de-la-lana.netlify.app/?perfil=productor&envio=remate-marzo`

@@ -249,12 +249,16 @@ function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").repl
 /* ---------- Vistas ---------- */
 // Registro de uso: solo funciona cuando el juego está publicado en su propio sitio (no acá).
 var RAS={on:location.protocol.indexOf("http")===0&&!/claude|anthropic/.test(location.hostname),id:null,cola:[],token:null};
-try{RAS.token=new URLSearchParams(location.search).get("t")}catch(e){}
+// Enlaces con destino: ?perfil=productor fija el público y saltea la elección; ?envio=nombre etiqueta el envío en el tablero.
+var ATAJOS={chico:"Niño o adolescente",grande:"Estudiante",estudiante:"Estudiante",productor:"Productor",trabajador:"Trabajador rural",esquilador:"Esquilador",consignatario:"Consignatario",industria:"Industria",tecnico:"Técnico"};
+var FIJO=null;
+try{var QS=new URLSearchParams(location.search);RAS.token=QS.get("t");RAS.envio=(QS.get("envio")||"").trim().slice(0,60)||null;
+  var qp=(QS.get("perfil")||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();FIJO=ATAJOS[qp]||null}catch(e){}
 function rasEnviar(c){return fetch("/api/evento",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(c),keepalive:true})}
 function rastro(tipo,d){if(!RAS.on)return;d=d||{};if(!RAS.id){RAS.cola.push([tipo,d]);return}
   rasEnviar({accion:"evento",participante:RAS.id,tipo:tipo,estacion:d.estacion,aciertos:d.aciertos,total:d.total,detalle:d.detalle}).catch(function(){})}
 function rasAlta(){if(!RAS.on)return;var r=S.reg||{},n=parseInt(r.tam,10);RAS.id=null;
-  rasEnviar({accion:"alta",perfil:S.perfil,modo:S.grupo?"grupo":"individual",token:RAS.token,nombre:r.nombre,correo:r.correo,consentimiento:!!r.ok,grupo:r.grupo,tam_grupo:isNaN(n)?null:n})
+  rasEnviar({accion:"alta",perfil:S.perfil,modo:S.grupo?"grupo":"individual",token:RAS.token,envio:RAS.envio,nombre:r.nombre,correo:r.correo,consentimiento:!!r.ok,grupo:r.grupo,tam_grupo:isNaN(n)?null:n})
     .then(function(x){return x.json()}).then(function(j){if(j&&j.id){RAS.id=j.id;try{localStorage.setItem("rutaLanaPid",j.id)}catch(e){}var c=RAS.cola;RAS.cola=[];c.forEach(function(v){rastro(v[0],v[1])})}}).catch(function(){})}
 function registro(){if(!RAS.on)return "";var r=S.reg||{};function v(k){return esc(r[k]||"")}
   if(S.grupo)return '<section class="grupo"><h2>¿Quiénes juegan?</h2><div class="reg"><input data-reg="grupo" placeholder="Nombre del grupo" value="'+v("grupo")+'" maxlength="120"><input data-reg="tam" type="number" min="1" max="999" placeholder="¿Cuántos son?" value="'+v("tam")+'"></div><p class="bajada">Solo guardamos el nombre del grupo y la cantidad.</p></section>';
@@ -264,6 +268,8 @@ function registro(){if(!RAS.on)return "";var r=S.reg||{};function v(k){return es
 function inicio(){
   function tarj(p){return '<button class="perfil'+(p.g==="visita"?" grande":"")+'" type="button" data-p="'+p.k+'"><b>'+p.n+'</b><span>'+p.d+'</span></button>'}
   var modo='<section class="grupo"><h2>¿Cómo jugamos?</h2><div class="modo"><button class="pastilla'+(S.grupo?"":" on")+'" type="button" data-ir="modoSolo">Cada uno en su pantalla</button><button class="pastilla'+(S.grupo?" on":"")+'" type="button" data-ir="modoGrupo">Todos juntos, en una pantalla</button></div>'+(S.grupo?'<p class="bajada">Modo grupo: letra grande y trivia en dos equipos, Verde y Ámbar, que responden por turnos.</p>':'')+'</section>';
+  if(FIJO){var pf=PERFILES.filter(function(p){return p.k===FIJO})[0];
+    return registro()+'<section class="grupo"><h2>Tu recorrido</h2><div class="perfiles"><button class="perfil grande" type="button" data-p="'+pf.k+'"><b>Empezar</b><span>'+pf.d+'</span></button></div></section>'+modo}
   return modo+registro()+'<section class="grupo"><h2>Vengo de visita</h2><div class="perfiles">'+PERFILES.filter(function(p){return p.g==="visita"}).map(tarj).join("")+'</div></section>'
     +'<section class="grupo"><h2>Trabajo con ovinos o con lana</h2><div class="perfiles">'+PERFILES.filter(function(p){return p.g==="rubro"}).map(tarj).join("")+'</div></section>';
 }
@@ -426,7 +432,7 @@ function pintar(){
   document.body.classList.toggle("gm",!!S.grupo);
   $("vista").innerHTML=v;if(S.vista==="mini")miniCargar();$("reinicio").hidden=S.vista==="inicio";
   var p=perfil();
-  $("bajada").textContent=S.vista==="inicio"?"Del campo a la planta, estación por estación. Juntá los sellos y recibite. Elegí quién sos para empezar.":"Recorrido: "+p.n+". Juntá los sellos de cada estación.";
+  $("bajada").textContent=S.vista==="inicio"?"Del campo a la planta, estación por estación. Juntá los sellos y recibite. "+(FIJO?"Este recorrido está armado para: "+PERFILES.filter(function(x){return x.k===FIJO})[0].n+".":"Elegí quién sos para empezar."):"Recorrido: "+p.n+". Juntá los sellos de cada estación.";
 }
 function ir(a){
   if(a==="modoSolo"||a==="modoGrupo"){S.grupo=a==="modoGrupo";try{localStorage.setItem("rutaLanaModo",S.grupo?"g":"s")}catch(e){}pintar();return}
@@ -479,6 +485,7 @@ function arrancar(prev){
   try{S.grupo=localStorage.getItem("rutaLanaModo")==="g"}catch(e){}
   var g=null;try{g=JSON.parse(localStorage.getItem("rutaLana")||"null")}catch(e){}
   var d=(prev&&prev.perfil)?prev:g;
+  if(FIJO&&d&&d.perfil!==FIJO){d=null;try{localStorage.removeItem("rutaLanaPid")}catch(e){}}
   if(d&&d.perfil&&PERFILES.some(function(p){return p.k===d.perfil})){S.perfil=d.perfil;S.sellos=d.sellos||{};S.hechos=d.hechos||{};S.colas=d.colas||{};S.vista="ruta";try{RAS.id=localStorage.getItem("rutaLanaPid")}catch(e){}}
   pintar();
 }

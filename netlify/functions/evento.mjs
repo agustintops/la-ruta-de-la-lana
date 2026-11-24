@@ -26,8 +26,8 @@ export default async (req) => {
     const consiente = b.consentimiento === true;
     const modo = b.modo === "grupo" ? "grupo" : "individual";
     const fila = await sql`
-      insert into participantes (token, nombre, correo, perfil, modo, grupo, tam_grupo, consentimiento)
-      values (${token},
+      insert into participantes (token, envio, nombre, correo, perfil, modo, grupo, tam_grupo, consentimiento)
+      values (${token}, ${texto(b.envio, 60)},
               ${consiente ? texto(b.nombre, 120) : null},
               ${consiente ? texto(b.correo, 200) : null},
               ${texto(b.perfil, 60)}, ${modo},

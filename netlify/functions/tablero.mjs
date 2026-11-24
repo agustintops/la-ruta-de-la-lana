@@ -25,7 +25,7 @@ export default async (req) => {
   const hasta = FECHA.test(u.searchParams.get("hasta") || "") ? u.searchParams.get("hasta") : "2999-12-31";
 
   // Todo se filtra por la fecha (hora de Uruguay) en que la persona o el grupo empezó a jugar.
-  const [totales, dias, perfiles, sellos, juegos, preguntas, personas, grupos] = await Promise.all([
+  const [totales, dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios] = await Promise.all([
     sql`
       with p as (
         select * from participantes
@@ -96,9 +96,16 @@ export default async (req) => {
       where p.modo = 'grupo'
         and (p.creado at time zone ${ZONA})::date between ${desde}::date and ${hasta}::date
       group by p.id order by p.creado desc limit 500`,
+    sql`
+      select coalesce(p.envio, 'Sin etiqueta') as envio, count(distinct p.id)::int as partidas,
+             count(distinct p.id) filter (where e.tipo = 'sello')::int as con_sello,
+             count(distinct p.id) filter (where e.tipo = 'diploma')::int as diplomas
+      from participantes p left join eventos e on e.participante_id = p.id
+      where (p.creado at time zone ${ZONA})::date between ${desde}::date and ${hasta}::date
+      group by 1 order by 2 desc limit 100`,
   ]);
 
-  return json({ totales: totales[0], dias, perfiles, sellos, juegos, preguntas, personas, grupos });
+  return json({ totales: totales[0], dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios });
 };
 
 export const config = { path: "/api/tablero" };
