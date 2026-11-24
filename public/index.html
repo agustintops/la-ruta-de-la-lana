@@ -236,6 +236,13 @@ var LUGARES2=[
 ];
 var TOURS={planta:{l:LUGARES,filas:[[150,500,850],[125,375,625,875],[150,500,850]],tit:"Recorrido por la planta",hecho:"tour"},despues:{l:LUGARES2,filas:[[150,500,850],[125,375,625,875]],tit:"Después del top · fuera de la fábrica",hecho:"tour2"}};
 var MIN=3,LARGO=6,PASA=.6;
+// Recorrido corto: trivias más breves, cinco estaciones para el diploma y sellos que también se ganan jugando.
+var CORTO={"Niño o adolescente":{largo:4,base:["oveja","esquila","planta","hilo","fibra"]}};
+function corto(){return CORTO[S.perfil]||null}
+function largoT(){var c=corto();return c?Math.min(c.largo,LARGO):LARGO}
+function base(){var c=corto(),es=estaciones();if(!c)return es;var b=es.filter(function(e){return c.base.indexOf(e.k)>=0});return b.length?b:es}
+// En el recorrido corto, terminar bien un juego de la estación también da el sello.
+function selloJuego(est,pc){if(!corto())return;var antes=S.sellos[est]||0;S.sellos[est]=Math.max(antes,pc);if(antes<PASA&&pc>=PASA)rastro("sello",{estacion:est,aciertos:null,total:null,detalle:{por:"juego"}})}
 var S={vista:"inicio",perfil:null,sellos:{},hechos:{},colas:{},tour:null,est:null,quiz:null,planta:null};
 
 function azar(v){for(var i=v.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=v[i];v[i]=v[j];v[j]=t}return v}
@@ -251,9 +258,11 @@ function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").repl
 var RAS={on:location.protocol.indexOf("http")===0&&!/claude|anthropic/.test(location.hostname),id:null,cola:[],token:null};
 // Enlaces con destino: ?perfil=productor fija el público y saltea la elección; ?envio=nombre etiqueta el envío en el tablero.
 var ATAJOS={chico:"Niño o adolescente",grande:"Estudiante",estudiante:"Estudiante",productor:"Productor",trabajador:"Trabajador rural",esquilador:"Esquilador",consignatario:"Consignatario",industria:"Industria",tecnico:"Técnico"};
-var FIJO=null;
+var FIJO=null,MODO=null;
+function guardarModo(){try{localStorage.setItem("rutaLanaModo",S.grupo?(S.equipos?"e":"g"):"s")}catch(e){}}
 try{var QS=new URLSearchParams(location.search);RAS.token=QS.get("t");RAS.envio=(QS.get("envio")||"").trim().slice(0,60)||null;
-  var qp=(QS.get("perfil")||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();FIJO=ATAJOS[qp]||null}catch(e){}
+  var qp=(QS.get("perfil")||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();FIJO=ATAJOS[qp]||null;
+  var qm=(QS.get("modo")||"").toLowerCase();MODO=["individual","grupo","equipos"].indexOf(qm)>=0?qm:null}catch(e){}
 function rasEnviar(c){return fetch("/api/evento",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(c),keepalive:true})}
 function rastro(tipo,d){if(!RAS.on)return;d=d||{};if(!RAS.id){RAS.cola.push([tipo,d]);return}
   rasEnviar({accion:"evento",participante:RAS.id,tipo:tipo,estacion:d.estacion,aciertos:d.aciertos,total:d.total,detalle:d.detalle}).catch(function(){})}
@@ -267,32 +276,33 @@ function registro(){if(!RAS.on)return "";var r=S.reg||{};function v(k){return es
 }
 function inicio(){
   function tarj(p){return '<button class="perfil'+(p.g==="visita"?" grande":"")+'" type="button" data-p="'+p.k+'"><b>'+p.n+'</b><span>'+p.d+'</span></button>'}
-  var modo='<section class="grupo"><h2>¿Cómo jugamos?</h2><div class="modo"><button class="pastilla'+(S.grupo?"":" on")+'" type="button" data-ir="modoSolo">Cada uno en su pantalla</button><button class="pastilla'+(S.grupo?" on":"")+'" type="button" data-ir="modoGrupo">Todos juntos, en una pantalla</button></div>'+(S.grupo?'<p class="bajada">Modo grupo: letra grande y trivia en dos equipos, Verde y Ámbar, que responden por turnos.</p>':'')+'</section>';
+  var modo='<section class="grupo"><h2>¿Cómo jugamos?</h2><div class="modo"><button class="pastilla'+(S.grupo?"":" on")+'" type="button" data-ir="modoSolo">Cada uno en su pantalla</button><button class="pastilla'+(S.grupo?" on":"")+'" type="button" data-ir="modoGrupo">Todos juntos, en una pantalla</button></div>'+(S.grupo?'<div class="modo" style="margin-top:10px"><button class="pastilla'+(S.equipos?"":" on")+'" type="button" data-ir="eqNo">Sin equipos</button><button class="pastilla'+(S.equipos?" on":"")+'" type="button" data-ir="eqSi">En dos equipos</button></div><p class="bajada">'+(S.equipos?"Letra grande. El grupo se divide en dos equipos, Verde y Ámbar, que responden una pregunta cada uno, por turnos.":"Letra grande. Todo el grupo responde junto.")+'</p>':'')+'</section>';
+  if(MODO)modo="";
   if(FIJO){var pf=PERFILES.filter(function(p){return p.k===FIJO})[0];
     return registro()+'<section class="grupo"><h2>Tu recorrido</h2><div class="perfiles"><button class="perfil grande" type="button" data-p="'+pf.k+'"><b>Empezar</b><span>'+pf.d+'</span></button></div></section>'+modo}
   return modo+registro()+'<section class="grupo"><h2>Vengo de visita</h2><div class="perfiles">'+PERFILES.filter(function(p){return p.g==="visita"}).map(tarj).join("")+'</div></section>'
     +'<section class="grupo"><h2>Trabajo con ovinos o con lana</h2><div class="perfiles">'+PERFILES.filter(function(p){return p.g==="rubro"}).map(tarj).join("")+'</div></section>';
 }
 function ruta(){
-  var es=estaciones(),hechos=es.filter(function(e){return (S.sellos[e.k]||0)>=PASA}).length,p=perfil();
+  var es=base(),extra=estaciones().filter(function(e){return es.indexOf(e)<0}),hechos=es.filter(function(e){return (S.sellos[e.k]||0)>=PASA}).length,p=perfil();
+  function boton(e,i,et){var s=S.sellos[e.k],cl=s==null?"":(s>=PASA?" si":" casi"),tx=s==null?"Sin sello":(s>=PASA?"Sello ganado · "+Math.round(s*100)+"%":"Casi · "+Math.round(s*100)+"%");
+    return '<button class="estacion" type="button" data-e="'+e.k+'"><svg viewBox="0 0 32 32" aria-hidden="true">'+e.i+'</svg><span class="num">'+et+'</span><h3>'+e.n+'</h3><span class="det">'+e.d+'</span><span class="sello'+cl+'">'+tx+'</span></button>'}
   var h='<div class="cabezal"><div class="avance">'+hechos+' de '+es.length+' sellos<small>para recibirte de '+p.titulo+'</small></div><div class="barra"><i style="width:'+(es.length?hechos/es.length*100:0)+'%"></i></div></div>';
   if(hechos===es.length&&es.length)h+='<div class="fila"><button class="accion" type="button" data-ir="diploma">Ver mi diploma</button></div>';
-  h+='<div class="ruta">'+es.map(function(e,i){
-    var s=S.sellos[e.k],cl=s==null?"":(s>=PASA?" si":" casi"),tx=s==null?"Sin sello":(s>=PASA?"Sello ganado · "+Math.round(s*100)+"%":"Casi · "+Math.round(s*100)+"%");
-    return '<button class="estacion" type="button" data-e="'+e.k+'"><svg viewBox="0 0 32 32" aria-hidden="true">'+e.i+'</svg><span class="num">ESTACIÓN '+(i+1)+'</span><h3>'+e.n+'</h3><span class="det">'+e.d+'</span><span class="sello'+cl+'">'+tx+'</span></button>';
-  }).join("")+'</div>';
+  h+='<div class="ruta">'+es.map(function(e,i){return boton(e,i,"ESTACIÓN "+(i+1))}).join("")+'</div>';
+  if(extra.length)h+='<section class="grupo" style="margin-top:26px"><h2>Si querés seguir</h2><p class="bajada">Estas no hacen falta para el diploma.</p></section><div class="ruta">'+extra.map(function(e,i){return boton(e,i,"EXTRA")}).join("")+'</div>';
   return h;
 }
 function estacion(){
   var e=EST.filter(function(x){return x.k===S.est})[0],n=banco(e.k).length,jg=JUEGOS[e.k]||[];
   var sl=S.sellos[e.k],est=sl==null?'<span class="sello">Sin sello todavía</span>':(sl>=PASA?'<span class="sello si">Sello ganado · '+Math.round(sl*100)+'%</span>':'<span class="sello casi">Casi · '+Math.round(sl*100)+'%</span>');
-  var h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="ruta">Volver a la ruta</button></div><div class="fila"><h2>'+e.n+'</h2>'+est+'</div><div class="actividades">';
-  if(n>=MIN)h+='<div class="act'+(sl!=null?" hecha":"")+'"><h3>Trivia'+(sl!=null?'<em>'+(sl>=PASA?"Hecha":"Intentada")+'</em>':'')+'</h3><p>'+Math.min(LARGO,n)+' preguntas. Con el 60% bien, ganás el sello de la estación.</p><button class="accion" type="button" data-ir="quiz">'+(sl!=null?"Repetir":"Empezar")+'</button></div>';
-  if(e.k==="planta")h+='<div class="act'+(S.hechos.tour?" hecha":"")+'"><h3>Recorrido por la planta'+(S.hechos.tour?"<em>Hecho</em>":"")+'</h3><p>Los diez pasos de la lana dentro de nuestra fábrica, de la descarga al top.'+(n<MIN?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour">'+(S.hechos.tour?"Recorrer de nuevo":"Empezar el recorrido")+'</button></div>';
+  var h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="ruta">Volver a la ruta</button></div><div class="fila"><h2>'+e.n+'</h2>'+est+'</div>'+(corto()&&(jg.length||e.k==="planta"||e.k==="hilo"||e.k==="fibra")?'<p class="bajada">El sello se gana con la trivia o jugando: elegí lo que más te guste.</p>':'')+'<div class="actividades">';
+  if(n>=MIN)h+='<div class="act'+(sl!=null?" hecha":"")+'"><h3>Trivia'+(sl!=null?'<em>'+(sl>=PASA?"Hecha":"Intentada")+'</em>':'')+'</h3><p>'+Math.min(largoT(),n)+' preguntas. Con '+Math.ceil(PASA*Math.min(largoT(),n)-1e-9)+' bien, ganás el sello de la estación.</p><button class="accion" type="button" data-ir="quiz">'+(sl!=null?"Repetir":"Empezar")+'</button></div>';
+  if(e.k==="planta")h+='<div class="act'+(S.hechos.tour?" hecha":"")+'"><h3>Recorrido por la planta'+(S.hechos.tour?"<em>Hecho</em>":"")+'</h3><p>Los diez pasos de la lana dentro de nuestra fábrica, de la descarga al top.'+(n<MIN||corto()?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour">'+(S.hechos.tour?"Recorrer de nuevo":"Empezar el recorrido")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.prenda?" hecha":"")+'"><h3>¿Qué lana para cada cosa?'+(S.hechos.prenda?"<em>Hecho</em>":"")+'</h3><p>Fina, media o gruesa: elegí la lana para cada prenda.</p><button class="accion" type="button" data-ir="prenda">Jugar</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.lote?" hecha":"")+'"><h3>Armar el lote'+(S.hechos.lote?"<em>Hecho</em>":"")+'</h3><p>Elegí los fardos para cumplir justo lo que pidió el cliente, sin pagar de más.</p><button class="accion" type="button" data-ir="lote">Jugar</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.lav?" hecha":"")+'"><h3>El lavadero'+(S.hechos.lav?"<em>Hecho</em>":"")+'</h3><p>Regulá la temperatura y el jabón de las bateas, y mirá cómo sale la lana.</p><button class="accion" type="button" data-ir="lav">Jugar</button></div>';
-  if(e.k==="hilo")h+='<div class="act'+(S.hechos.tour2?" hecha":"")+'"><h3>Recorrido: del top a la prenda'+(S.hechos.tour2?"<em>Hecho</em>":"")+'</h3><p>Esto ya no pasa en nuestra fábrica: es lo que hacen la hilandería, la tejeduría y la terminación con el top.'+(n<MIN?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour2">'+(S.hechos.tour2?"Recorrer de nuevo":"Ver qué sigue")+'</button></div>';
+  if(e.k==="hilo")h+='<div class="act'+(S.hechos.tour2?" hecha":"")+'"><h3>Recorrido: del top a la prenda'+(S.hechos.tour2?"<em>Hecho</em>":"")+'</h3><p>Esto ya no pasa en nuestra fábrica: es lo que hacen la hilandería, la tejeduría y la terminación con el top.'+(n<MIN||corto()?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour2">'+(S.hechos.tour2?"Recorrer de nuevo":"Ver qué sigue")+'</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.planta?" hecha":"")+'"><h3>Del camión al top'+(S.hechos.planta?"<em>Hecho</em>":"")+'</h3><p>Repaso: ordená los diez pasos de la fábrica, en tres tramos.</p><button class="accion clara" type="button" data-ir="planta">'+(S.hechos.planta?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.ciclo?" hecha":"")+'"><h3>El ciclo de vida de la lana'+(S.hechos.ciclo?"<em>Hecho</em>":"")+'</h3><p>Del campo a tu ropero y de vuelta a la tierra: catorce pasos para ordenar, en tres tramos.</p><button class="accion clara" type="button" data-ir="ciclo">'+(S.hechos.ciclo?"Jugar de nuevo":"Jugar")+'</button></div>';
   jg.forEach(function(j){h+='<div class="act'+(S.hechos[j.k]?" hecha":"")+'"><h3>'+j.n+(S.hechos[j.k]?"<em>Hecho</em>":"")+'</h3><p>'+j.d+'</p><button class="accion" type="button" data-ir="mini:'+j.k+'">Jugar</button></div>'});
@@ -300,7 +310,7 @@ function estacion(){
 }
 function quiz(){
   var Q=S.quiz,q=Q.lista[Q.i],letras="ABCD",e=EST.filter(function(x){return x.k===S.est})[0];
-  var turno="";if(S.grupo){var s=[0,0];Q.res.forEach(function(r,i){if(r)s[i%2]++});var t=Q.i%2;turno='<div class="turno"><span class="eq e0'+(t===0?" va":"")+'">Equipo Verde · '+s[0]+'</span><span class="eq e1'+(t===1?" va":"")+'">Equipo Ámbar · '+s[1]+'</span><span class="bajada">Responde el equipo '+(t===0?"Verde":"Ámbar")+'</span></div>'}
+  var turno="";if(S.grupo&&S.equipos){var s=[0,0];Q.res.forEach(function(r,i){if(r)s[i%2]++});var t=Q.i%2;turno='<div class="turno"><span class="eq e0'+(t===0?" va":"")+'">Equipo Verde · '+s[0]+'</span><span class="eq e1'+(t===1?" va":"")+'">Equipo Ámbar · '+s[1]+'</span><span class="bajada">Responde el equipo '+(t===0?"Verde":"Ámbar")+'</span></div>'}
   var pts='<div class="puntos">'+Q.lista.map(function(_,i){return '<i class="'+(i<Q.res.length?(Q.res[i]?"bien":"mal"):(i===Q.i?"ahora":""))+'"></i>'}).join("")+'</div>';
   var h='<section class="panel"><div class="fila" style="justify-content:space-between"><span class="ceja">'+e.n+' · '+esc(q.t)+'</span>'+pts+'</div>'+turno+'<p class="pregunta">'+esc(q.q)+'</p><div class="opciones">';
   Q.ord[Q.i].forEach(function(i,pos){var o=q.o[i],cl="";if(Q.elegida!=null){cl=i===q.c?" correcta":(i===Q.elegida?" errada":"")}
@@ -311,7 +321,7 @@ function quiz(){
   return h+'</section>';
 }
 function resultado(){
-  var eq="";if(S.grupo){var s=[0,0];S.quiz.res.forEach(function(r,i){if(r)s[i%2]++});eq='<div class="turno"><span class="eq e0 va">Equipo Verde · '+s[0]+'</span><span class="eq e1 va">Equipo Ámbar · '+s[1]+'</span><span class="bajada">'+(s[0]===s[1]?"Empate":"Gana el equipo "+(s[0]>s[1]?"Verde":"Ámbar"))+'</span></div>'}
+  var eq="";if(S.grupo&&S.equipos){var s=[0,0];S.quiz.res.forEach(function(r,i){if(r)s[i%2]++});eq='<div class="turno"><span class="eq e0 va">Equipo Verde · '+s[0]+'</span><span class="eq e1 va">Equipo Ámbar · '+s[1]+'</span><span class="bajada">'+(s[0]===s[1]?"Empate":"Gana el equipo "+(s[0]>s[1]?"Verde":"Ámbar"))+'</span></div>'}
   var Q=S.quiz,b=Q.res.filter(Boolean).length,pc=b/Q.lista.length,ok=pc>=PASA,e=EST.filter(function(x){return x.k===S.est})[0];
   return '<section class="panel" style="align-items:flex-start"><span class="ceja">'+e.n+'</span><div class="grande">'+b+' de '+Q.lista.length+'</div><h2>'+(ok?"Sello ganado":"Faltó poco")+'</h2>'+eq+'<p class="bajada">'+(ok?"Esta estación ya cuenta para tu diploma.":"Para el sello hace falta el 60%. Podés repetir: las preguntas cambian.")+'</p><div class="fila"><button class="accion" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="quiz">Repetir la trivia</button></div></section>';
 }
@@ -422,7 +432,7 @@ function mini(){
 function miniCargar(){var f=$("mini");if(!f)return;try{var d=JSON.parse($("minis").textContent)[S.mini],b=atob(d),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);f.srcdoc=new TextDecoder("utf-8").decode(u)}catch(e){}}
 window.addEventListener("message",function(ev){var m=ev.data;if(!m||m.ruta!=="juego"||(m.k!=="mesa"&&m.k!=="galpon"))return;
   rastro("juego",{estacion:m.k,aciertos:m.aciertos,total:m.total,detalle:m.parte?{parte:m.parte}:null});
-  if(m.total&&m.aciertos/m.total>=PASA&&(m.k!=="mesa"||m.parte==="mesa")){S.hechos[m.k]=true;guardar()}});
+  if(m.total&&m.aciertos/m.total>=PASA&&(m.k!=="mesa"||m.parte==="mesa")){S.hechos[m.k]=true;selloJuego("esquila",m.aciertos/m.total);guardar()}});
 function diploma(){
   var p=perfil(),f=new Date().toLocaleDateString("es-UY",{day:"numeric",month:"long",year:"numeric"});
   return '<section class="diploma"><svg viewBox="0 0 32 32" width="84" height="84" aria-hidden="true">'+IC["graduation-cap"]+'</svg><span class="ceja" style="color:#6a4222">La ruta de la lana</span><div class="titulo">'+p.titulo+'</div><p>Recorrió todas las estaciones de su ruta y ganó cada sello.</p><p><b>'+f+'</b></p><img src="'+LOGO+'" alt="Tops Fray Marcos S.A." width="190" height="99" style="margin:6px 0"><div class="fila" style="justify-content:center"><button class="accion" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="inicio">Elegir otro recorrido</button></div></section>';
@@ -435,10 +445,10 @@ function pintar(){
   $("bajada").textContent=S.vista==="inicio"?"Del campo a la planta, estación por estación. Juntá los sellos y recibite. "+(FIJO?"Este recorrido está armado para: "+PERFILES.filter(function(x){return x.k===FIJO})[0].n+".":"Elegí quién sos para empezar."):"Recorrido: "+p.n+". Juntá los sellos de cada estación.";
 }
 function ir(a){
-  if(a==="modoSolo"||a==="modoGrupo"){S.grupo=a==="modoGrupo";try{localStorage.setItem("rutaLanaModo",S.grupo?"g":"s")}catch(e){}pintar();return}
+  if(a==="modoSolo"||a==="modoGrupo"||a==="eqSi"||a==="eqNo"){if(a==="eqSi"||a==="eqNo")S.equipos=a==="eqSi";else S.grupo=a==="modoGrupo";guardarModo();pintar();return}
   if(a==="quiz"){
     // se recorre todo el banco de la estación antes de repetir una pregunta
-    var todas=banco(S.est),n=Math.min(LARGO,todas.length),cola=(S.colas[S.est]||[]).filter(function(id){return todas.some(function(q){return q.id===id})}),ids=cola.splice(0,n);
+    var todas=banco(S.est),n=Math.min(largoT(),todas.length),cola=(S.colas[S.est]||[]).filter(function(id){return todas.some(function(q){return q.id===id})}),ids=cola.splice(0,n);
     if(ids.length<n){cola=azar(todas.map(function(q){return q.id}).filter(function(id){return ids.indexOf(id)<0}));ids=ids.concat(cola.splice(0,n-ids.length))}
     S.colas[S.est]=cola;
     var l=azar(ids.map(function(id){return todas.filter(function(q){return q.id===id})[0]}));
@@ -451,7 +461,7 @@ function ir(a){
   else if(a==="lote"){var pp=PEDIDOS[Math.floor(Math.random()*PEDIDOS.length)];if(S.lote&&S.lote.p===pp)pp=PEDIDOS[(PEDIDOS.indexOf(pp)+1)%PEDIDOS.length];S.lote={p:pp,sel:[],res:null};S.vista="lote"}
   else if(a==="loteGo"){loteCorrer()}
   else if(a==="prenda"){S.prenda={orden:azar(PRENDAS.map(function(_,k){return k})),i:0,resp:null,res:[]};S.vista="prenda"}
-  else if(a==="prendaSig"){var PP=S.prenda;PP.i++;PP.resp=null;if(PP.i>=PP.orden.length){var pb=PP.res.filter(Boolean).length;rastro("juego",{estacion:"prenda",aciertos:pb,total:PP.orden.length});if(pb===PP.orden.length){S.hechos.prenda=true;guardar()}}}
+  else if(a==="prendaSig"){var PP=S.prenda;PP.i++;PP.resp=null;if(PP.i>=PP.orden.length){var pb=PP.res.filter(Boolean).length;rastro("juego",{estacion:"prenda",aciertos:pb,total:PP.orden.length});if(pb===PP.orden.length){S.hechos.prenda=true;selloJuego("fibra",1);guardar()}}}
   else if(a==="tourSigue"){S.tour.abierto=null;S.tour.resp=null}
   else if(a==="planta"||a==="ciclo"){nuevoTramo(a,0,0);S.vista="planta";a="planta"}
   else if(a==="tramo"){nuevoTramo(S.planta.k,S.planta.tramo+1,S.planta.errores)}
@@ -468,7 +478,7 @@ $("vista").addEventListener("click",function(ev){
   if(t.dataset.lt!=null||t.dataset.lj!=null){if(S.lav.res)return;if(t.dataset.lt!=null){var v=t.dataset.lt.split(",");S.lav.b[+v[0]].t=+v[1]}else{var bb=S.lav.b[+t.dataset.lj];bb.j=!bb.j}pintar();return}
   if(t.dataset.lugar!=null){var T=S.tour,k=+t.dataset.lugar;if(k>T.vistos.length)return;T.abierto=k;T.resp=null;T.orden=azar([0,1]);pintar();var f=document.querySelector(".ficha");if(f)f.scrollIntoView({block:"nearest",behavior:"smooth"});return}
   if(t.dataset.resp!=null){var T2=S.tour;if(T2.resp!=null)return;T2.resp=+t.dataset.resp;var R2=TOURS[T2.k||"planta"];if(T2.resp!==R2.l[T2.abierto].c)T2.errores++;if(T2.vistos.indexOf(T2.abierto)<0)T2.vistos.push(T2.abierto);
-    if(T2.vistos.length===R2.l.length){rastro("juego",{estacion:R2.hecho,aciertos:R2.l.length-T2.errores,total:R2.l.length});S.hechos[R2.hecho]=true;var se=R2.hecho==="tour"?"planta":"hilo";if(banco(se).length<MIN)S.sellos[se]=Math.max(S.sellos[se]||0,1-T2.errores/R2.l.length);guardar()}
+    if(T2.vistos.length===R2.l.length){rastro("juego",{estacion:R2.hecho,aciertos:R2.l.length-T2.errores,total:R2.l.length});S.hechos[R2.hecho]=true;var se=R2.hecho==="tour"?"planta":"hilo";if(banco(se).length<MIN)S.sellos[se]=Math.max(S.sellos[se]||0,1-T2.errores/R2.l.length);else selloJuego(se,1-T2.errores/R2.l.length);guardar()}
     pintar();var b=$("sigue");if(b)b.focus({preventScroll:true});return}
   if(t.dataset.p){S.perfil=t.dataset.p;S.sellos={};S.hechos={};S.colas={};guardar();rasAlta();ir("ruta")}
   else if(t.dataset.e){S.est=t.dataset.e;ir("estacion")}
@@ -482,7 +492,9 @@ $("reinicio").addEventListener("click",function(){ir("inicio")});
 function arrancar(prev){
   cargarContenido();
   $("logo").src=LOGO;
-  try{S.grupo=localStorage.getItem("rutaLanaModo")==="g"}catch(e){}
+  try{var gm=localStorage.getItem("rutaLanaModo");S.grupo=gm==="g"||gm==="e";S.equipos=gm==="e"}catch(e){}
+  // El enlace puede fijar el modo: ?modo=individual, grupo o equipos.
+  if(MODO){S.grupo=MODO!=="individual";S.equipos=MODO==="equipos";guardarModo()}
   var g=null;try{g=JSON.parse(localStorage.getItem("rutaLana")||"null")}catch(e){}
   var d=(prev&&prev.perfil)?prev:g;
   if(FIJO&&d&&d.perfil!==FIJO){d=null;try{localStorage.removeItem("rutaLanaPid")}catch(e){}}
@@ -494,7 +506,7 @@ function cargarContenido(){if(!RAS.on)return;
   fetch("/api/contenido").then(function(r){return r.ok?r.json():null}).then(function(c){if(!c||!c.preguntas||c.preguntas.length<10)return;
     BANCO=c.preguntas;
     [["fabrica",LUGARES],["despues_del_top",LUGARES2]].forEach(function(v){var n=(c.recorridos||{})[v[0]];if(!n||!n.length)return;var a=v[1];a.length=0;n.forEach(function(s){a.push({n:s.n,t:s.t,q:s.q,o:s.o,c:0,i:IC[s.i]||IC["clipboard"]})})});
-    var j=c.ajustes||{},x;if((x=parseInt(j.preguntas_por_trivia,10))>0)LARGO=x;if((x=parseInt(j.minimo_para_sello,10))>0)PASA=x/100;if((x=parseInt(j.minimo_preguntas_estacion,10))>0)MIN=x;
+    var j=c.ajustes||{},x;if((x=parseInt(j.preguntas_por_trivia,10))>0)LARGO=x;if((x=parseInt(j.preguntas_por_trivia_chicos,10))>0)CORTO["Niño o adolescente"].largo=x;if((x=parseInt(j.minimo_para_sello,10))>0)PASA=x/100;if((x=parseInt(j.minimo_preguntas_estacion,10))>0)MIN=x;
     (c.perfiles||[]).forEach(function(p){var q=PERFILES.filter(function(z){return z.k===p.clave})[0];if(q){if(p.nombre)q.n=p.nombre;if(p.descripcion)q.d=p.descripcion;if(p.titulo_diploma)q.titulo=p.titulo_diploma}});
     if(S.vista==="inicio"||S.vista==="ruta"||S.vista==="estacion")pintar()}).catch(function(){})}
 var hot=window.claude&&window.claude.hot;

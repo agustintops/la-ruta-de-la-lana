@@ -75,3 +75,11 @@ Al enlace del juego se le pueden agregar estos datos (en el tablero hay un armad
 - `?envio=` pone una etiqueta para ver ese envío por separado en el tablero.
 
 Ejemplo: `https://ruta-de-la-lana.netlify.app/?perfil=productor&envio=remate-marzo`
+
+## Recorrido corto para chicos
+
+El perfil "Soy chico" tiene un recorrido más breve:
+
+- Las trivias son de 4 preguntas (se cambia en la planilla, pestaña Ajustes, con la clave `preguntas_por_trivia_chicos`).
+- El diploma se gana con cinco estaciones: La oveja, La esquila, La planta, Después del top y La lana. Las demás aparecen como "Extra".
+- El sello también se gana jugando: los recorridos, la mesa de vellones, el galpón y "¿Qué lana para cada cosa?".
