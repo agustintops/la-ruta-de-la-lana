@@ -370,7 +370,7 @@ function estacion(){
   var corte=h.length,parte=!corto()&&n>=MIN;
   if(e.k==="campo")h+='<div class="act'+(S.hechos.anio?" hecha":"")+'"><h3>El año de la majada'+(S.hechos.anio?"<em>Hecho</em>":"")+'</h3><p>De la encarnerada al destete: poné cada trabajo en su momento y armá la rueda del año.</p><button class="accion" type="button" data-ir="anio">'+(S.hechos.anio?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="oveja")h+='<div class="act'+(S.hechos.raza?" hecha":"")+'"><h3>¿Qué raza para qué?'+(S.hechos.raza?"<em>Hecho</em>":"")+'</h3><p>Lana fina, carne, leche o las dos cosas: elegí la raza para cada objetivo.</p><button class="accion" type="button" data-ir="raza">'+(S.hechos.raza?"Jugar de nuevo":"Jugar")+'</button></div>';
-  if(e.k==="esquila")h+='<div class="act'+(S.hechos.esquilar?" hecha":"")+'"><h3>Hoy esquilás vos'+(S.hechos.esquilar?"<em>Hecho</em>":"")+'</h3><p>Esquilá la oveja con la máquina y guardá cada lana en su bolsón. Te puntuamos según dónde pusiste cada una.</p><button class="accion" type="button" data-ir="esquilar">'+(S.hechos.esquilar?"Jugar de nuevo":"Jugar")+'</button></div>';
+  if(e.k==="esquila")h+='<div class="act'+(S.hechos.esquilar?" hecha":"")+'"><h3>Hoy esquilás vos'+(S.hechos.esquilar?"<em>Hecho</em>":"")+'</h3><p>Sacá las puntas quemadas, esquilá el animal de una y, en la mesa, separá cada lana a su bolsón.</p><button class="accion" type="button" data-ir="esquilar">'+(S.hechos.esquilar?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.tour?" hecha":"")+'"><h3>Recorrido por la planta'+(S.hechos.tour?"<em>Hecho</em>":"")+'</h3><p>Los diez pasos de la lana dentro de nuestra fábrica, de la descarga al top.'+(n<MIN||corto()?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour">'+(S.hechos.tour?"Recorrer de nuevo":"Empezar el recorrido")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.prenda?" hecha":"")+'"><h3>¿Qué lana para cada cosa?'+(S.hechos.prenda?"<em>Hecho</em>":"")+'</h3><p>Fina, media o gruesa: elegí la lana para cada prenda.</p><button class="accion" type="button" data-ir="prenda">Jugar</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.peinadora?" hecha":"")+'"><h3>La peinadora'+(S.hechos.peinadora?"<em>Hecho</em>":"")+'</h3><p>Pasá el peine por la cinta: dejá las fibras derechas y sacá las cortas, los vegetales y los nuditos.</p><button class="accion" type="button" data-ir="peinadora">'+(S.hechos.peinadora?"Jugar de nuevo":"Jugar")+'</button></div>';
@@ -539,72 +539,109 @@ function diploma(){
     +'<div class="dipnom noimp"><label for="dipn">'+(S.grupo?"Nombre del grupo para el diploma":"Tu nombre para el diploma")+'</label><input id="dipn" type="text" maxlength="60" autocomplete="name" value="'+esc(nom).replace(/"/g,"&quot;")+'" placeholder="Escribilo acá"></div>'
     +'<div class="fila noimp" style="justify-content:center;margin-top:16px"><button class="accion" type="button" id="dipimp">Imprimir o guardar en PDF</button><button class="accion clara" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="inicio">Elegir otro recorrido</button></div>';
 }
-// Juego: esquilar la oveja pasando la máquina y llevar cada lana a su bolsón.
+// Juego: esquilar la oveja con la máquina, desbordar el vellón en la mesa y llevar cada lana a su bolsón.
 var ESQ=[
- {k:"puntas",n:"Puntas quemadas",de:"De atrás, manchada",c:"#d2a84e",e:"Es lana manchada por la orina. Se saca antes que nada, para que no manche la buena."},
- {k:"barriga",n:"Barriga",de:"De la barriga",c:"#e6dcc0",e:"La barriga vale distinto que el vellón, y por eso va aparte."},
- {k:"garreo",n:"Garreo",de:"De las patas y la cara",c:"#c9bfa6",e:"Es lana corta y áspera. Va siempre en su propia bolsa y nunca se mezcla con el vellón."},
- {k:"pedazos",n:"Pedazos",de:"De los costados",c:"#f0e8d2",e:"La lana de los costados se aparta del vellón y va en su propia bolsa."},
- {k:"vellon",n:"Vellón",de:"Del lomo",c:"#fdfaf0",e:"Es la lana del lomo, la mejor de la oveja."}];
-function esqZ(k){return ESQ.filter(function(z){return z.k===k})[0]}
+ {k:"puntas",n:"Puntas quemadas",de:"De atrás, manchada",c:"#d2a84e",e:"Es lana manchada por la orina. Se saca bien aparte y antes que nada, para que no manche la buena."},
+ {k:"barriga",n:"Barriga",de:"De la barriga",c:"#eadba8",e:"La barriga vale distinto que el vellón, y por eso va aparte."},
+ {k:"garreo",n:"Garreo",de:"De las patas y la cara",c:"#bdb199",e:"Es lana corta y áspera. Va siempre en su propia bolsa y nunca se mezcla con el vellón."},
+ {k:"pedazos",n:"Pedazos",de:"Los bordes del vellón",c:"#d6c79c",e:"Son los bordes que se le sacan al vellón en la mesa. Llegan con más tierra y sudor, y van en su propia bolsa."},
+ {k:"vellon",n:"Vellón",de:"El vellón, ya limpio",c:"#fdfaf0",e:"Es la mejor lana de la oveja. Sale casi entero y se embolsa después de separarle todo lo demás en la mesa."}];
+function esqZ(k){return k==="entero"?ESQ[4]:ESQ.filter(function(z){return z.k===k})[0]}
 function esqNuevo(){
   var C=[],x,y,f=0;
   for(y=66;y<=190;y+=15){f++;for(x=92+(f%2?0:8);x<=312;x+=16){var dx=(x-200)/112,dy=(y-125)/66;if(dx*dx+dy*dy>1)continue;
-    var z=(x>270&&y>132)?"puntas":y<112?"vellon":y<150?"pedazos":"barriga";C.push({x:x+(f*7+x)%5-2,y:y+(x*3+f)%5-2,r:13,z:z,ido:0})}}
-  [128,160,238,270].forEach(function(lx){[196,210,224].forEach(function(ly){C.push({x:lx+8,y:ly,r:10,z:"garreo",ido:0})})});
-  [[66,76],[82,70],[97,78],[104,96],[100,114]].forEach(function(p){C.push({x:p[0],y:p[1],r:11,z:"garreo",ido:0})});
-  S.esq={C:C,M:[],orden:[],bol:azar(ESQ.map(function(z){return z.k})),sel:null,fin:false,msg:"Mantené apretado y pasá la máquina por la lana."};
+    var z=(x>270&&y>132)?"puntas":"entero";C.push({x:x+(f*7+x)%5-2,y:y+(x*3+f)%5-2,r:13,z:z,ido:0})}}
+  [128,160,238,270].forEach(function(lx){[196,210,224].forEach(function(ly){C.push({x:lx+8,y:ly,r:10,z:"entero",ido:0})})});
+  [[66,76],[82,70],[97,78],[104,96],[100,114]].forEach(function(p){C.push({x:p[0],y:p[1],r:11,z:"entero",ido:0})});
+  S.esq={fase:"oveja",C:C,M:[],orden:[],bol:azar(ESQ.map(function(z){return z.k})),sel:null,fin:false,rec:0,pas:0,ult:null,msg:"Primero las puntas quemadas: la lana manchada de atrás."};
 }
+function esqMesa(){var E=S.esq,C=[],x,y,f=0;
+  for(y=58;y<=246;y+=13){f++;for(x=30+(f%2?0:7);x<=330;x+=14){var dx=(x-180)/142,dy=(y-152)/90,t=Math.atan2(dy,dx),d=Math.sqrt(dx*dx+dy*dy)/(1+.07*Math.sin(3*t)+.05*Math.cos(5*t));if(d>1)continue;
+    var g=t*180/Math.PI,esq=[38,142,-38,-142].some(function(a){return Math.abs(g-a)<13}),z=d>.7&&esq?"garreo":d>.62&&Math.abs(g-90)<34?"barriga":d>.8?"pedazos":"vellon";
+    C.push({x:x+(f*5+x)%4-2,y:y+(x*3+f)%4-2,r:10,z:z,ido:0})}}
+  E.fase="mesa";E.C=C;E.sel=null;E.listas=[];E.msg=esqMesaTxt()}
+function esqMesaN(){var C=S.esq.C,r={};["pedazos","barriga","garreo","vellon"].forEach(function(k){var g=C.filter(function(c){return c.z===k});r[k]=[g.filter(function(c){return c.ido}).length,g.length]});return r}
+function esqMesaTxt(){var n=esqMesaN();return "Separado: bordes "+n.pedazos[0]+" de "+n.pedazos[1]+" · barriga "+n.barriga[0]+" de "+n.barriga[1]+" · patas y cara "+n.garreo[0]+" de "+n.garreo[1]+" · lana buena sacada: "+n.vellon[0]}
+function esqSale(k){var E=S.esq,g=E.C.filter(function(c){return c.z===k}),x=0,y=0;if(E.M.some(function(m){return m.k===k}))return;g.forEach(function(c){x+=c.x;y+=c.y});
+  E.M.push({k:k,x:Math.max(50,Math.min(310,x/g.length)),y:Math.max(60,Math.min(240,y/g.length)),b:null});return E.M.length-1}
 function esqMecha(m,i){var z=esqZ(m.k),s=S.esq.sel===i;
   return '<g class="mecha'+(s?" sel":"")+'" data-m="'+i+'" transform="translate('+m.x.toFixed(1)+' '+m.y.toFixed(1)+')"><circle r="30" fill="transparent"/><g fill="'+z.c+'" stroke="#8a7f66" stroke-width="1.2"><circle cx="-11" cy="2" r="10"/><circle cx="10" cy="3" r="11"/><circle cx="0" cy="-8" r="11"/><circle cx="0" cy="6" r="9"/></g><text y="29" text-anchor="middle">'+z.de+'</text></g>'}
 function esqBolsa(k,i){var z=esqZ(k),x=6+i*70,hay=S.esq.M.filter(function(m){return m.b===k}),n=z.n.split(" ");
   var t=n.length>1?'<text x="'+(x+32)+'" y="417" text-anchor="middle">'+n[0]+'</text><text x="'+(x+32)+'" y="430" text-anchor="middle">'+n[1]+'</text>':'<text x="'+(x+32)+'" y="423" text-anchor="middle">'+z.n+'</text>';
   return '<g class="bolsa" data-b="'+k+'"><path d="M'+(x+6)+' 322q26 -12 52 0l4 76q-30 10 -60 0z" fill="rgba(243,238,224,.10)" stroke="#f3eee0" stroke-width="2" stroke-linejoin="round"/><path d="M'+(x+8)+' 330q24 8 48 0" fill="none" stroke="#f3eee0" stroke-width="1.5" opacity=".6"/>'
     +hay.map(function(m,j){return '<circle cx="'+(x+22+j*12)+'" cy="'+(372-(j%2)*10)+'" r="11" fill="'+esqZ(m.k).c+'" stroke="#8a7f66"/>'}).join("")+t+'</g>'}
-function esqSvg(){var E=S.esq;
-  var s='<svg id="esqsvg"'+(E.sel!=null?' class="elige"':'')+' viewBox="0 0 360 438" role="application" aria-label="Oveja para esquilar y cinco bolsones"><ellipse cx="200" cy="236" rx="120" ry="7" fill="rgba(0,0,0,.25)"/>';
-  [128,160,238,270].forEach(function(lx){s+='<rect x="'+lx+'" y="170" width="16" height="60" rx="6" fill="#ecd3bf"/><rect x="'+lx+'" y="224" width="16" height="10" rx="3" fill="#3a2e28"/>'});
-  s+='<ellipse cx="200" cy="125" rx="106" ry="60" fill="#f2dccb"/><path d="M300 100q16 6 12 22" fill="none" stroke="#ecd3bf" stroke-width="9" stroke-linecap="round"/>'
-    +'<ellipse cx="100" cy="74" rx="15" ry="8" fill="#e3c4ae" transform="rotate(25 100 74)"/><ellipse cx="74" cy="100" rx="31" ry="27" fill="#ecd3bf"/><ellipse cx="50" cy="108" rx="11" ry="9" fill="#e3c4ae"/><circle cx="68" cy="94" r="3.6" fill="#1c2a28"/><path d="M45 112q5 4 10 0" fill="none" stroke="#3a2e28" stroke-width="1.6" stroke-linecap="round"/>';
-  s+='<g id="esqlana">'+E.C.map(function(c,i){return c.ido?"":'<circle data-c="'+i+'" cx="'+c.x+'" cy="'+c.y+'" r="'+c.r+'" fill="'+esqZ(c.z).c+'" stroke="#b9ae93" stroke-width=".8"/>'}).join("")+'</g>';
+function esqSvg(){var E=S.esq,ov=E.fase==="oveja";
+  var s='<svg id="esqsvg"'+(E.sel!=null?' class="elige"':'')+' viewBox="0 0 360 438" role="application" aria-label="'+(ov?"Oveja para esquilar":"Vellón sobre la mesa")+' y cinco bolsones">';
+  if(ov){s+='<ellipse cx="200" cy="236" rx="120" ry="7" fill="rgba(0,0,0,.25)"/>';
+    [128,160,238,270].forEach(function(lx){s+='<rect x="'+lx+'" y="170" width="16" height="60" rx="6" fill="#ecd3bf"/><rect x="'+lx+'" y="224" width="16" height="10" rx="3" fill="#3a2e28"/>'});
+    s+='<ellipse cx="200" cy="125" rx="106" ry="60" fill="#f2dccb"/><path d="M300 100q16 6 12 22" fill="none" stroke="#ecd3bf" stroke-width="9" stroke-linecap="round"/>'
+      +'<ellipse cx="100" cy="74" rx="15" ry="8" fill="#e3c4ae" transform="rotate(25 100 74)"/><ellipse cx="74" cy="100" rx="31" ry="27" fill="#ecd3bf"/><ellipse cx="50" cy="108" rx="11" ry="9" fill="#e3c4ae"/><circle cx="68" cy="94" r="3.6" fill="#1c2a28"/><path d="M45 112q5 4 10 0" fill="none" stroke="#3a2e28" stroke-width="1.6" stroke-linecap="round"/>'}
+  else{s+='<rect x="14" y="40" width="332" height="226" rx="10" fill="#6b4a2e"/>';for(var ty=52;ty<262;ty+=14)s+='<rect x="20" y="'+ty+'" width="320" height="8" rx="3" fill="#8a6540"/>';
+    s+='<rect x="22" y="266" width="12" height="26" fill="#5a3d25"/><rect x="326" y="266" width="12" height="26" fill="#5a3d25"/>'}
+  s+='<g id="esqlana">'+(E.fase==="bolsas"?"":E.C.map(function(c,i){return c.ido?"":'<circle data-c="'+i+'" cx="'+c.x+'" cy="'+c.y+'" r="'+c.r+'" fill="'+esqZ(c.z).c+'" stroke="#b9ae93" stroke-width=".8"/>'}).join(""))+'</g>';
   s+='<line x1="6" y1="300" x2="354" y2="300" stroke="#f3eee0" stroke-opacity=".25" stroke-dasharray="3 5"/>'+E.bol.map(esqBolsa).join("");
-  s+='<g id="esqmechas">'+E.M.map(function(m,i){return m.b?"":esqMecha(m,i)}).join("")+'</g><g id="esqmaq" style="display:none" pointer-events="none"><g><circle r="15" fill="none" stroke="#f2bd3d" stroke-width="2" stroke-dasharray="4 3"/><rect x="-5" y="-9" width="10" height="18" rx="3" fill="#f2bd3d"/></g></g></svg>';
+  s+='<g id="esqmechas">'+E.M.map(function(m,i){return m.b?"":esqMecha(m,i)}).join("")+'</g><g id="esqmaq" style="display:none" pointer-events="none"><g><circle r="15" fill="none" stroke="#f2bd3d" stroke-width="2" stroke-dasharray="4 3"/>'+(ov?'<rect x="-5" y="-9" width="10" height="18" rx="3" fill="#f2bd3d"/>':'')+'</g></g></svg>';
   return s}
-function esquilar(){var E=S.esq,h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="estacion">Volver</button><span class="ceja">Hoy esquilás vos</span></div>';
-  if(!E.fin)return h+'<h2>Esquilá la oveja</h2><p class="bajada" id="esqmsg" aria-live="polite">'+E.msg+'</p><div class="esq">'+esqSvg()+'</div><p class="bajada" style="font-size:14px">Con el mouse, mantené apretado el botón mientras pasás; en el teléfono, el dedo apoyado. Cuando terminás una parte, sale esa lana: tocá el bolsón donde va (o arrastrala). Al final te puntuamos según dónde pusiste cada una.</p></section>';
-  var ok=E.M.filter(function(m){return m.b===m.k}).length,todo=ok===ESQ.length,pri=E.orden[0]==="puntas";
-  h+='<div class="grande">'+ok+' de '+ESQ.length+'</div><h2>'+(todo?"¡Lote bien acondicionado!":"Este lote todavía no lleva grifa")+'</h2><p class="bajada">'+(todo?"Cada lana fue a su bolsón. Así se trabaja para que el lote lleve la grifa.":"Hay lanas mezcladas. Para la grifa, cada lana tiene que ir en su bolsón. Mirá cuáles y probá de nuevo.")+'</p><ol class="cinta esqres">';
-  ESQ.forEach(function(z){var m=E.M.filter(function(q){return q.k===z.k})[0],b=m.b===z.k;
-    h+='<li class="'+(b?"":"mal")+'"><div><b>'+z.de+' → '+(b?z.n:"la pusiste en «"+esqZ(m.b).n+"». Va en «"+z.n+"»")+'</b><span>'+z.e+'</span></div></li>'});
-  h+='</ol><p class="bajada">'+(pri?"Además empezaste por las puntas quemadas, que es lo primero que se saca.":"Un dato: lo primero que se saca son las puntas quemadas, la lana manchada de atrás.")+'</p><div class="fila"><button class="accion" type="button" data-ir="esquilar">Esquilar otra oveja</button><button class="accion clara" type="button" data-ir="estacion">Listo</button></div>';
+function esquilar(){var E=S.esq,h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="estacion">Volver</button><span class="ceja">Hoy esquilás vos · '+(E.fin?"resultado":E.fase==="oveja"?"paso 1 de 2":"paso 2 de 2")+'</span></div>';
+  if(!E.fin&&E.fase==="oveja")return h+'<h2>Esquilá la oveja</h2><p class="bajada" id="esqmsg" aria-live="polite">'+E.msg+'</p><div class="esq">'+esqSvg()+'</div><p class="bajada" id="esqrec" style="font-size:14px">Segundas pasadas: '+E.rec+'</p><p class="bajada" style="font-size:14px">Con el mouse, mantené apretado el botón mientras pasás; en el teléfono, el dedo apoyado. Primero se sacan las puntas quemadas, que van bien aparte. Después se esquila todo el animal de una, y el vellón va a la mesa. No repases donde ya esquilaste: las segundas pasadas restan.</p></section>';
+  if(!E.fin)return h+'<h2>'+(E.fase==="mesa"?"En la mesa: separá cada lana":"Embolsá lo que quedó")+'</h2><p class="bajada" id="esqmsg" aria-live="polite">'+E.msg+'</p><div class="esq">'+esqSvg()+'</div>'+(E.fase==="mesa"?'<div class="fila"><button class="accion" type="button" data-ir="esqListo">Listo: el vellón quedó limpio</button></div><p class="bajada" style="font-size:14px">El vellón salió casi entero y está abierto en la mesa. Mantené apretado y separá lo que no es vellón: los bordes, la barriga y la lana de las patas y la cara. Cada parte que separás va a su bolsón. Cuidado con sacar lana buena del medio.</p>':'')+'</section>';
+  var R=E.res,est=R.pts>=.9?3:R.pts>=.7?2:1;
+  h+='<div class="grande" aria-label="'+est+' de 3 estrellas">'+"★★★".slice(0,est)+'<span style="opacity:.25">'+"★★★".slice(est)+'</span></div><h2>'+(R.todo?"¡Lote bien acondicionado!":"Este lote todavía no lleva grifa")+'</h2><p class="bajada">'+(R.todo?"Esquila prolija, vellón bien limpio en la mesa y cada lana en su bolsón. Así se trabaja para que el lote lleve la grifa.":"Mirá qué falló y probá de nuevo.")+'</p><ol class="cinta esqres">';
+  h+='<li class="'+(R.rec<=8?"":"mal")+'"><div><b>Segundas pasadas: '+R.rec+'</b><span>'+(R.rec<=8?"Esquila prolija, casi sin repasar.":"Repasaste mucho donde ya habías esquilado.")+' Con una buena esquila el vellón sale entero y hay menos segundas pasadas y recortes.</span></div></li>';
+  if(R.g>3)h+='<li class="mal"><div><b>Sacaste '+R.g+' mechas de lana buena</b><span>Eso es vellón que se pierde: en la mesa se saca solo lo que no es vellón.</span></div></li>';
+  ESQ.forEach(function(z){var m=E.M.filter(function(q){return q.k===z.k})[0],n=R.n[z.k],falta=n&&z.k!=="vellon"&&n[0]<n[1]*.85,bien=m&&m.b===z.k&&!falta;
+    h+='<li class="'+(bien?"":"mal")+'"><div><b>'+z.de+' → '+(!m?"no la separaste: quedó dentro del vellón":m.b!==z.k?"la pusiste en «"+esqZ(m.b).n+"». Va en «"+z.n+"»":falta?z.n+", pero quedó una parte dentro del vellón":z.n)+'</b><span>'+z.e+'</span></div></li>'});
+  h+='</ol><div class="fila"><button class="accion" type="button" data-ir="esquilar">Esquilar otra oveja</button><button class="accion clara" type="button" data-ir="estacion">Listo</button></div>';
   return h+'</section>'}
 function esqPunto(ev){var sv=$("esqsvg");if(!sv)return null;var r=sv.getBoundingClientRect();return {x:(ev.clientX-r.left)*360/r.width,y:(ev.clientY-r.top)*438/r.height}}
 function esqDecir(t){S.esq.msg=t;var m=$("esqmsg");if(m)m.textContent=t}
-function esqCortar(p){var E=S.esq,g=$("esqlana"),toca={};
-  E.C.forEach(function(c,i){if(c.ido)return;var dx=c.x-p.x,dy=c.y-p.y;if(dx*dx+dy*dy<(c.r+9)*(c.r+9)){c.ido=1;toca[c.z]=1;var el=g.querySelector('[data-c="'+i+'"]');if(el)el.remove()}});
+function esqCortar(p){var E=S.esq,g=$("esqlana"),toca={},n=0,mesa=E.fase==="mesa",ex=mesa?2:9,solo=(!mesa&&E.orden.indexOf("puntas")<0)?"puntas":null,otra=false;if(E.fase==="bolsas"||!g)return;
+  E.C.forEach(function(c,i){if(c.ido)return;var dx=c.x-p.x,dy=c.y-p.y;if(dx*dx+dy*dy<(c.r+ex)*(c.r+ex)){if(solo&&c.z!==solo){otra=true;return}c.ido=1;n++;toca[c.z]=1;var el=g.querySelector('[data-c="'+i+'"]');if(el)el.remove()}});
+  if(n&&navigator.vibrate){var ah=Date.now();if(ah-(E.vib||0)>90){E.vib=ah;try{navigator.vibrate(12)}catch(e){}}}
+  if(otra&&!n)esqDecir("Todavía no: primero las puntas quemadas, la lana manchada de atrás.");
+  if(mesa){if(n){Object.keys(toca).forEach(function(k){if(k==="vellon"||E.C.some(function(c){return c.z===k&&!c.ido}))return;var i=esqSale(k);if(i!=null){$("esqmechas").insertAdjacentHTML("beforeend",esqMecha(E.M[i],i));E.sel=i;esqMarca()}});
+      esqDecir(E.sel!=null?"Separaste "+esqZ(E.M[E.sel].k).de.toLowerCase()+". Tocá el bolsón donde va.":esqMesaTxt())}return}
+  // Segundas pasadas: recorrer con la máquina andando una parte del cuerpo que ya está esquilada.
+  var bx=(p.x-200)/106,by=(p.y-125)/60;
+  if(!n&&!solo&&E.ult&&bx*bx+by*by<1&&!E.C.some(function(c){var ex=c.x-p.x,ey=c.y-p.y;return !c.ido&&ex*ex+ey*ey<1764})){E.pas+=Math.sqrt((p.x-E.ult.x)*(p.x-E.ult.x)+(p.y-E.ult.y)*(p.y-E.ult.y));var antes=E.rec;while(E.pas>60){E.pas-=60;E.rec++}if(E.rec!==antes){var r=$("esqrec");if(r)r.textContent="Segundas pasadas: "+E.rec}}
+  E.ult=p;
   Object.keys(toca).forEach(function(k){if(E.orden.indexOf(k)>=0||E.C.some(function(c){return c.z===k&&!c.ido}))return;
-    E.orden.push(k);var pos={puntas:[292,166],barriga:[200,196],garreo:[74,150],pedazos:[200,134],vellon:[200,84]}[k];E.M.push({k:k,x:pos[0],y:pos[1],b:null});
-    $("esqmechas").insertAdjacentHTML("beforeend",esqMecha(E.M[E.M.length-1],E.M.length-1));E.sel=E.M.length-1;esqMarca();esqDecir("Salió lana "+esqZ(k).de.toLowerCase()+". Tocá el bolsón donde va.")})}
+    E.orden.push(k);if(k==="entero"){esqDecir("El vellón salió casi entero.");return}
+    E.M.push({k:k,x:292,y:166,b:null});
+    $("esqmechas").insertAdjacentHTML("beforeend",esqMecha(E.M[E.M.length-1],E.M.length-1));E.sel=E.M.length-1;esqMarca();esqDecir("Salieron las puntas quemadas. Tocá el bolsón donde van; después esquilá todo el animal.")});
+  esqPaso()}
+function esqPaso(){var E=S.esq;if(E.fase!=="oveja"||E.pasando||E.C.some(function(c){return !c.ido})||E.M.length<1||E.M.some(function(m){return !m.b}))return;
+  E.pasando=true;esqDecir("¡Oveja esquilada! El vellón va a la mesa.");setTimeout(function(){if(S.esq!==E)return;E.pasando=false;esqMesa();if(S.vista==="esq")pintar()},900)}
+function esqListo(){var E=S.esq;E.mesa=esqMesaN();["pedazos","barriga","garreo"].forEach(function(k){if(E.mesa[k][0]>0)esqSale(k)});E.fase="bolsas";E.M.push({k:"vellon",x:180,y:150,b:null});
+  E.M.forEach(function(m,i){if(!m.b&&m.k!=="vellon"){m.x=70+90*(i%4);m.y=90}});esqSig()}
+function esqSig(){var E=S.esq,q=E.M.map(function(x,j){return x.b?-1:j}).filter(function(j){return j>=0})[0];E.sel=q==null?null:q;if(q!=null)E.msg=(E.M[q].k==="vellon"?"Ahora el vellón":"Falta embolsar: "+esqZ(E.M[q].k).de.toLowerCase())+". Tocá su bolsón."}
 function esqMarca(){var E=S.esq,sv=$("esqsvg");if(!sv)return;sv.setAttribute("class",E.sel!=null?"elige":"");[].forEach.call(sv.querySelectorAll("[data-m]"),function(g){g.setAttribute("class","mecha"+(+g.dataset.m===E.sel?" sel":""))})}
 function esqPoner(i,k){var E=S.esq,m=E.M[i];if(!m||m.b)return;m.b=k;E.sel=null;
-  if(E.M.length===ESQ.length&&E.M.every(function(q){return q.b})){E.fin=true;var ok=E.M.filter(function(q){return q.b===q.k}).length;S.hechos.esquilar=true;selloJuego("esquila",ok/ESQ.length);guardar();rastro("juego",{estacion:"esquilar",aciertos:ok,total:ESQ.length,detalle:{orden:E.orden}})}
-  else E.msg=E.C.some(function(c){return !c.ido})?"Bien. Seguí esquilando.":"Llevá cada lana a su bolsón.";
-  pintar()}
+  if(E.fase==="bolsas"&&E.M.every(function(q){return q.b})){var n=E.mesa,ok=0,fr=0;
+    ESQ.forEach(function(z){var q=E.M.filter(function(x){return x.k===z.k})[0],falta=n[z.k]&&z.k!=="vellon"&&n[z.k][0]<n[z.k][1]*.85;if(q&&q.b===z.k&&!falta)ok++});
+    ["pedazos","barriga","garreo"].forEach(function(z){fr+=n[z][0]/n[z][1]/3});
+    var g=n.vellon[0],dq=Math.max(0,fr-g/n.vellon[1]*2),rq=Math.max(0,1-Math.max(0,E.rec-6)/24);
+    E.res={ok:ok,rec:E.rec,n:n,g:g,pts:.6*ok/ESQ.length+.25*dq+.15*rq};E.res.todo=ok===ESQ.length&&g<=3&&E.rec<=8;
+    E.fin=true;S.hechos.esquilar=true;selloJuego("esquila",E.res.pts);guardar();rastro("juego",{estacion:"esquilar",aciertos:Math.round(E.res.pts*100),total:100,detalle:{bolsas:ok,segundas:E.rec,buena:g}})}
+  else if(E.fase==="bolsas")esqSig();
+  else if(E.fase==="mesa")E.msg=esqMesaTxt();
+  else E.msg=E.C.some(function(c){return !c.ido})?"Ahora sí: esquilá todo el animal de una.":"Bien.";
+  pintar();esqPaso()}
 function esqBolsaEn(p){if(p.y<296)return null;var i=Math.max(0,Math.min(4,Math.floor((p.x-6)/70)));return S.esq.bol[i]}
 (function(){var arr=null,v=$("vista");
   v.addEventListener("pointerdown",function(ev){if(S.vista!=="esq"||S.esq.fin||!ev.target.closest||!ev.target.closest("#esqsvg"))return;ev.preventDefault();
-    var p=esqPunto(ev),g=ev.target.closest("[data-m]"),b=ev.target.closest("[data-b]");
+    var p=esqPunto(ev),g=ev.target.closest("[data-m]"),b=ev.target.closest("[data-b]");S.esq.ult=null;
     if(g){arr={i:+g.dataset.m,g:g,x0:p.x,y0:p.y,mov:false};try{$("esqsvg").setPointerCapture(ev.pointerId)}catch(e){}return}
     if(S.esq.sel!=null&&(b||p.y>=296)){esqPoner(S.esq.sel,b?b.dataset.b:esqBolsaEn(p));return}
     try{$("esqsvg").setPointerCapture(ev.pointerId)}catch(e){}var q0=$("esqmaq");if(q0){q0.style.display="";q0.setAttribute("class","anda");q0.setAttribute("transform","translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")")}if(p.y<296)esqCortar(p)});
   v.addEventListener("pointermove",function(ev){if(S.vista!=="esq"||!S.esq||S.esq.fin)return;var p=esqPunto(ev);if(!p)return;
     if(arr){if(Math.abs(p.x-arr.x0)+Math.abs(p.y-arr.y0)>6)arr.mov=true;if(arr.mov){var m=S.esq.M[arr.i];m.x=Math.max(20,Math.min(340,p.x));m.y=Math.max(20,Math.min(410,p.y));arr.g.setAttribute("transform","translate("+m.x.toFixed(1)+" "+m.y.toFixed(1)+")")}return}
-    var q=$("esqmaq");if(q){var den=p.x>=0&&p.x<=360&&p.y>=0&&p.y<296;q.style.display=den?"":"none";q.setAttribute("transform","translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")")}
+    var q=$("esqmaq");if(q){var den=p.x>=0&&p.x<=360&&p.y>=0&&p.y<296&&S.esq.fase!=="bolsas";q.style.display=den?"":"none";q.setAttribute("transform","translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")")}
     var apr=!!(ev.buttons&1)||(ev.pointerType!=="mouse"&&ev.pressure>0);if(q)q.setAttribute("class",apr?"anda":"");if(p.y<296&&p.y>=0&&apr)esqCortar(p)});
   function suelta(ev){if(!arr)return;var a=arr;arr=null;if(S.vista!=="esq")return;var p=esqPunto(ev);
     if(!a.mov){S.esq.sel=S.esq.sel===a.i?null:a.i;esqDecir(S.esq.sel==null?"Llevá cada lana a su bolsón.":"Ahora tocá el bolsón donde va.");esqMarca();return}
     var k=p&&esqBolsaEn(p);if(k)esqPoner(a.i,k)}
-  v.addEventListener("pointerup",function(ev){var q=$("esqmaq");if(q)q.setAttribute("class","");suelta(ev)});v.addEventListener("pointercancel",function(){arr=null});
+  v.addEventListener("pointerup",function(ev){var q=$("esqmaq");if(q)q.setAttribute("class","");if(S.esq)S.esq.ult=null;suelta(ev)});v.addEventListener("pointercancel",function(){arr=null});
 })();
 // Juego: la peinadora. Pasar el peine por la cinta para dejar las fibras paralelas y sacar cortas, vegetales y nuditos.
 var PEI_T={c:"Fibras cortas",v:"Vegetales",n:"Nuditos"};
@@ -697,6 +734,7 @@ function ir(a){
   else if(a==="peinadora"){peiNuevo();S.vista="pei";a="pei"}
   else if(a==="peiListo"){S.pei.fase="destino";S.pei.ord=azar([0,1,2])}
   else if(a==="esquilar"){esqNuevo();S.vista="esq";a="esq"}
+  else if(a==="esqListo"){esqListo()}
   else if(a==="lav"){S.lav={b:[{t:null,j:false},{t:null,j:false},{t:null,j:false}],res:null};S.vista="lav"}
   else if(a.indexOf("mini:")===0){S.mini=a.slice(5);S.vista="mini";a="mini"}
   else if(a==="lavGo"){lavCorrer()}
