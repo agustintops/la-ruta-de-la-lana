@@ -115,6 +115,11 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--ambar);outline-offs
 .esq .mecha.sel>circle{stroke:var(--ambar);stroke-width:2.5;stroke-dasharray:5 4}
 .esq .mecha.sel>g{animation:none}
 .esq .bolsa{cursor:pointer}
+.esq svg.elige .bolsa path:first-child{stroke:var(--ambar);animation:late 1s ease-in-out infinite}
+.esq #esqmaq>g{opacity:.55}
+.esq #esqmaq.anda>g{opacity:1;animation:vibra .09s linear infinite}
+.esq #esqmaq.anda circle{fill:rgba(242,189,61,.25)}
+@keyframes vibra{50%{transform:translate(1.2px,-1px)}}
 .esqres li.mal{background:rgba(226,102,79,.14);border-color:var(--rojo)}
 .esqres li.mal::before{color:var(--rojo)}
 .pei svg{cursor:ew-resize}
@@ -263,7 +268,6 @@ var PERFILES=[
   {k:"Técnico",n:"Técnico",d:"Asesoramiento en sanidad y manejo",g:"rubro",titulo:"Técnico de majada"}
 ];
 var JUEGOS={esquila:[
-  {k:"mesa",n:"La mesa de vellones",d:"Esquilá la oveja por partes y clasificá diez vellones.",u:"https://claude.ai/artifact/5UP4TwJLeRRoNtCndYQ5z6"},
   {k:"galpon",n:"Qué está mal en el galpón",d:"Encontrá los siete errores antes de que empiece la esquila.",u:"https://claude.ai/artifact/XYqdgSiBY2CMW4ojEtwMsi"}]};
 var ORDEN={
   planta:{t:"Del camión al top",b:"Repaso: tocá los pasos de la fábrica en el orden en que pasan.",tramos:[
@@ -366,7 +370,7 @@ function estacion(){
   var corte=h.length,parte=!corto()&&n>=MIN;
   if(e.k==="campo")h+='<div class="act'+(S.hechos.anio?" hecha":"")+'"><h3>El año de la majada'+(S.hechos.anio?"<em>Hecho</em>":"")+'</h3><p>De la encarnerada al destete: poné cada trabajo en su momento y armá la rueda del año.</p><button class="accion" type="button" data-ir="anio">'+(S.hechos.anio?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="oveja")h+='<div class="act'+(S.hechos.raza?" hecha":"")+'"><h3>¿Qué raza para qué?'+(S.hechos.raza?"<em>Hecho</em>":"")+'</h3><p>Lana fina, carne, leche o las dos cosas: elegí la raza para cada objetivo.</p><button class="accion" type="button" data-ir="raza">'+(S.hechos.raza?"Jugar de nuevo":"Jugar")+'</button></div>';
-  if(e.k==="esquila"&&VISITA.indexOf(S.perfil)>=0)h+='<div class="act'+(S.hechos.esquilar?" hecha":"")+'"><h3>Hoy esquilás vos'+(S.hechos.esquilar?"<em>Hecho</em>":"")+'</h3><p>Pasá la máquina por la oveja y llevá cada lana a su bolsón. Al final sabés si tu lote lleva grifa.</p><button class="accion" type="button" data-ir="esquilar">'+(S.hechos.esquilar?"Jugar de nuevo":"Jugar")+'</button></div>';
+  if(e.k==="esquila")h+='<div class="act'+(S.hechos.esquilar?" hecha":"")+'"><h3>Hoy esquilás vos'+(S.hechos.esquilar?"<em>Hecho</em>":"")+'</h3><p>Esquilá la oveja con la máquina y guardá cada lana en su bolsón. Te puntuamos según dónde pusiste cada una.</p><button class="accion" type="button" data-ir="esquilar">'+(S.hechos.esquilar?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.tour?" hecha":"")+'"><h3>Recorrido por la planta'+(S.hechos.tour?"<em>Hecho</em>":"")+'</h3><p>Los diez pasos de la lana dentro de nuestra fábrica, de la descarga al top.'+(n<MIN||corto()?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour">'+(S.hechos.tour?"Recorrer de nuevo":"Empezar el recorrido")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.prenda?" hecha":"")+'"><h3>¿Qué lana para cada cosa?'+(S.hechos.prenda?"<em>Hecho</em>":"")+'</h3><p>Fina, media o gruesa: elegí la lana para cada prenda.</p><button class="accion" type="button" data-ir="prenda">Jugar</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.peinadora?" hecha":"")+'"><h3>La peinadora'+(S.hechos.peinadora?"<em>Hecho</em>":"")+'</h3><p>Pasá el peine por la cinta: dejá las fibras derechas y sacá las cortas, los vegetales y los nuditos.</p><button class="accion" type="button" data-ir="peinadora">'+(S.hechos.peinadora?"Jugar de nuevo":"Jugar")+'</button></div>';
@@ -549,7 +553,7 @@ function esqNuevo(){
     var z=(x>270&&y>132)?"puntas":y<112?"vellon":y<150?"pedazos":"barriga";C.push({x:x+(f*7+x)%5-2,y:y+(x*3+f)%5-2,r:13,z:z,ido:0})}}
   [128,160,238,270].forEach(function(lx){[196,210,224].forEach(function(ly){C.push({x:lx+8,y:ly,r:10,z:"garreo",ido:0})})});
   [[66,76],[82,70],[97,78],[104,96],[100,114]].forEach(function(p){C.push({x:p[0],y:p[1],r:11,z:"garreo",ido:0})});
-  S.esq={C:C,M:[],orden:[],bol:azar(ESQ.map(function(z){return z.k})),sel:null,fin:false,msg:"Pasá la máquina por la lana para esquilar."};
+  S.esq={C:C,M:[],orden:[],bol:azar(ESQ.map(function(z){return z.k})),sel:null,fin:false,msg:"Mantené apretado y pasá la máquina por la lana."};
 }
 function esqMecha(m,i){var z=esqZ(m.k),s=S.esq.sel===i;
   return '<g class="mecha'+(s?" sel":"")+'" data-m="'+i+'" transform="translate('+m.x.toFixed(1)+' '+m.y.toFixed(1)+')"><circle r="30" fill="transparent"/><g fill="'+z.c+'" stroke="#8a7f66" stroke-width="1.2"><circle cx="-11" cy="2" r="10"/><circle cx="10" cy="3" r="11"/><circle cx="0" cy="-8" r="11"/><circle cx="0" cy="6" r="9"/></g><text y="29" text-anchor="middle">'+z.de+'</text></g>'}
@@ -558,16 +562,16 @@ function esqBolsa(k,i){var z=esqZ(k),x=6+i*70,hay=S.esq.M.filter(function(m){ret
   return '<g class="bolsa" data-b="'+k+'"><path d="M'+(x+6)+' 322q26 -12 52 0l4 76q-30 10 -60 0z" fill="rgba(243,238,224,.10)" stroke="#f3eee0" stroke-width="2" stroke-linejoin="round"/><path d="M'+(x+8)+' 330q24 8 48 0" fill="none" stroke="#f3eee0" stroke-width="1.5" opacity=".6"/>'
     +hay.map(function(m,j){return '<circle cx="'+(x+22+j*12)+'" cy="'+(372-(j%2)*10)+'" r="11" fill="'+esqZ(m.k).c+'" stroke="#8a7f66"/>'}).join("")+t+'</g>'}
 function esqSvg(){var E=S.esq;
-  var s='<svg id="esqsvg" viewBox="0 0 360 438" role="application" aria-label="Oveja para esquilar y cinco bolsones"><ellipse cx="200" cy="236" rx="120" ry="7" fill="rgba(0,0,0,.25)"/>';
+  var s='<svg id="esqsvg"'+(E.sel!=null?' class="elige"':'')+' viewBox="0 0 360 438" role="application" aria-label="Oveja para esquilar y cinco bolsones"><ellipse cx="200" cy="236" rx="120" ry="7" fill="rgba(0,0,0,.25)"/>';
   [128,160,238,270].forEach(function(lx){s+='<rect x="'+lx+'" y="170" width="16" height="60" rx="6" fill="#ecd3bf"/><rect x="'+lx+'" y="224" width="16" height="10" rx="3" fill="#3a2e28"/>'});
   s+='<ellipse cx="200" cy="125" rx="106" ry="60" fill="#f2dccb"/><path d="M300 100q16 6 12 22" fill="none" stroke="#ecd3bf" stroke-width="9" stroke-linecap="round"/>'
     +'<ellipse cx="100" cy="74" rx="15" ry="8" fill="#e3c4ae" transform="rotate(25 100 74)"/><ellipse cx="74" cy="100" rx="31" ry="27" fill="#ecd3bf"/><ellipse cx="50" cy="108" rx="11" ry="9" fill="#e3c4ae"/><circle cx="68" cy="94" r="3.6" fill="#1c2a28"/><path d="M45 112q5 4 10 0" fill="none" stroke="#3a2e28" stroke-width="1.6" stroke-linecap="round"/>';
   s+='<g id="esqlana">'+E.C.map(function(c,i){return c.ido?"":'<circle data-c="'+i+'" cx="'+c.x+'" cy="'+c.y+'" r="'+c.r+'" fill="'+esqZ(c.z).c+'" stroke="#b9ae93" stroke-width=".8"/>'}).join("")+'</g>';
   s+='<line x1="6" y1="300" x2="354" y2="300" stroke="#f3eee0" stroke-opacity=".25" stroke-dasharray="3 5"/>'+E.bol.map(esqBolsa).join("");
-  s+='<g id="esqmechas">'+E.M.map(function(m,i){return m.b?"":esqMecha(m,i)}).join("")+'</g><g id="esqmaq" style="display:none" pointer-events="none"><circle r="15" fill="none" stroke="#f2bd3d" stroke-width="2" stroke-dasharray="4 3"/><rect x="-5" y="-9" width="10" height="18" rx="3" fill="#f2bd3d"/></g></svg>';
+  s+='<g id="esqmechas">'+E.M.map(function(m,i){return m.b?"":esqMecha(m,i)}).join("")+'</g><g id="esqmaq" style="display:none" pointer-events="none"><g><circle r="15" fill="none" stroke="#f2bd3d" stroke-width="2" stroke-dasharray="4 3"/><rect x="-5" y="-9" width="10" height="18" rx="3" fill="#f2bd3d"/></g></g></svg>';
   return s}
 function esquilar(){var E=S.esq,h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="estacion">Volver</button><span class="ceja">Hoy esquilás vos</span></div>';
-  if(!E.fin)return h+'<h2>Esquilá la oveja</h2><p class="bajada" id="esqmsg" aria-live="polite">'+E.msg+'</p><div class="esq">'+esqSvg()+'</div><p class="bajada" style="font-size:14px">Con el dedo o con el cursor. Cada lana que sale va a un bolsón: arrastrala, o tocala y después tocá el bolsón. Al final te decimos si el lote lleva grifa.</p></section>';
+  if(!E.fin)return h+'<h2>Esquilá la oveja</h2><p class="bajada" id="esqmsg" aria-live="polite">'+E.msg+'</p><div class="esq">'+esqSvg()+'</div><p class="bajada" style="font-size:14px">Con el mouse, mantené apretado el botón mientras pasás; en el teléfono, el dedo apoyado. Cuando terminás una parte, sale esa lana: tocá el bolsón donde va (o arrastrala). Al final te puntuamos según dónde pusiste cada una.</p></section>';
   var ok=E.M.filter(function(m){return m.b===m.k}).length,todo=ok===ESQ.length,pri=E.orden[0]==="puntas";
   h+='<div class="grande">'+ok+' de '+ESQ.length+'</div><h2>'+(todo?"¡Lote bien acondicionado!":"Este lote todavía no lleva grifa")+'</h2><p class="bajada">'+(todo?"Cada lana fue a su bolsón. Así se trabaja para que el lote lleve la grifa.":"Hay lanas mezcladas. Para la grifa, cada lana tiene que ir en su bolsón. Mirá cuáles y probá de nuevo.")+'</p><ol class="cinta esqres">';
   ESQ.forEach(function(z){var m=E.M.filter(function(q){return q.k===z.k})[0],b=m.b===z.k;
@@ -580,7 +584,8 @@ function esqCortar(p){var E=S.esq,g=$("esqlana"),toca={};
   E.C.forEach(function(c,i){if(c.ido)return;var dx=c.x-p.x,dy=c.y-p.y;if(dx*dx+dy*dy<(c.r+9)*(c.r+9)){c.ido=1;toca[c.z]=1;var el=g.querySelector('[data-c="'+i+'"]');if(el)el.remove()}});
   Object.keys(toca).forEach(function(k){if(E.orden.indexOf(k)>=0||E.C.some(function(c){return c.z===k&&!c.ido}))return;
     E.orden.push(k);var pos={puntas:[292,166],barriga:[200,196],garreo:[74,150],pedazos:[200,134],vellon:[200,84]}[k];E.M.push({k:k,x:pos[0],y:pos[1],b:null});
-    $("esqmechas").insertAdjacentHTML("beforeend",esqMecha(E.M[E.M.length-1],E.M.length-1));esqDecir("Salió lana "+esqZ(k).de.toLowerCase()+". ¿A qué bolsón va?")})}
+    $("esqmechas").insertAdjacentHTML("beforeend",esqMecha(E.M[E.M.length-1],E.M.length-1));E.sel=E.M.length-1;esqMarca();esqDecir("Salió lana "+esqZ(k).de.toLowerCase()+". Tocá el bolsón donde va.")})}
+function esqMarca(){var E=S.esq,sv=$("esqsvg");if(!sv)return;sv.setAttribute("class",E.sel!=null?"elige":"");[].forEach.call(sv.querySelectorAll("[data-m]"),function(g){g.setAttribute("class","mecha"+(+g.dataset.m===E.sel?" sel":""))})}
 function esqPoner(i,k){var E=S.esq,m=E.M[i];if(!m||m.b)return;m.b=k;E.sel=null;
   if(E.M.length===ESQ.length&&E.M.every(function(q){return q.b})){E.fin=true;var ok=E.M.filter(function(q){return q.b===q.k}).length;S.hechos.esquilar=true;selloJuego("esquila",ok/ESQ.length);guardar();rastro("juego",{estacion:"esquilar",aciertos:ok,total:ESQ.length,detalle:{orden:E.orden}})}
   else E.msg=E.C.some(function(c){return !c.ido})?"Bien. Seguí esquilando.":"Llevá cada lana a su bolsón.";
@@ -590,16 +595,16 @@ function esqBolsaEn(p){if(p.y<296)return null;var i=Math.max(0,Math.min(4,Math.f
   v.addEventListener("pointerdown",function(ev){if(S.vista!=="esq"||S.esq.fin||!ev.target.closest||!ev.target.closest("#esqsvg"))return;ev.preventDefault();
     var p=esqPunto(ev),g=ev.target.closest("[data-m]"),b=ev.target.closest("[data-b]");
     if(g){arr={i:+g.dataset.m,g:g,x0:p.x,y0:p.y,mov:false};try{$("esqsvg").setPointerCapture(ev.pointerId)}catch(e){}return}
-    if(b&&S.esq.sel!=null){esqPoner(S.esq.sel,b.dataset.b);return}
-    if(p.y<296)esqCortar(p)});
+    if(S.esq.sel!=null&&(b||p.y>=296)){esqPoner(S.esq.sel,b?b.dataset.b:esqBolsaEn(p));return}
+    try{$("esqsvg").setPointerCapture(ev.pointerId)}catch(e){}var q0=$("esqmaq");if(q0){q0.style.display="";q0.setAttribute("class","anda");q0.setAttribute("transform","translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")")}if(p.y<296)esqCortar(p)});
   v.addEventListener("pointermove",function(ev){if(S.vista!=="esq"||!S.esq||S.esq.fin)return;var p=esqPunto(ev);if(!p)return;
     if(arr){if(Math.abs(p.x-arr.x0)+Math.abs(p.y-arr.y0)>6)arr.mov=true;if(arr.mov){var m=S.esq.M[arr.i];m.x=Math.max(20,Math.min(340,p.x));m.y=Math.max(20,Math.min(410,p.y));arr.g.setAttribute("transform","translate("+m.x.toFixed(1)+" "+m.y.toFixed(1)+")")}return}
     var q=$("esqmaq");if(q){var den=p.x>=0&&p.x<=360&&p.y>=0&&p.y<296;q.style.display=den?"":"none";q.setAttribute("transform","translate("+p.x.toFixed(1)+" "+p.y.toFixed(1)+")")}
-    if(p.y<296&&p.y>=0&&(ev.pointerType==="mouse"||ev.buttons||ev.pressure>0))esqCortar(p)});
+    var apr=!!(ev.buttons&1)||(ev.pointerType!=="mouse"&&ev.pressure>0);if(q)q.setAttribute("class",apr?"anda":"");if(p.y<296&&p.y>=0&&apr)esqCortar(p)});
   function suelta(ev){if(!arr)return;var a=arr;arr=null;if(S.vista!=="esq")return;var p=esqPunto(ev);
-    if(!a.mov){S.esq.sel=S.esq.sel===a.i?null:a.i;esqDecir(S.esq.sel==null?"Llevá cada lana a su bolsón.":"Ahora tocá el bolsón donde va.");pintar();return}
+    if(!a.mov){S.esq.sel=S.esq.sel===a.i?null:a.i;esqDecir(S.esq.sel==null?"Llevá cada lana a su bolsón.":"Ahora tocá el bolsón donde va.");esqMarca();return}
     var k=p&&esqBolsaEn(p);if(k)esqPoner(a.i,k)}
-  v.addEventListener("pointerup",suelta);v.addEventListener("pointercancel",function(){arr=null});
+  v.addEventListener("pointerup",function(ev){var q=$("esqmaq");if(q)q.setAttribute("class","");suelta(ev)});v.addEventListener("pointercancel",function(){arr=null});
 })();
 // Juego: la peinadora. Pasar el peine por la cinta para dejar las fibras paralelas y sacar cortas, vegetales y nuditos.
 var PEI_T={c:"Fibras cortas",v:"Vegetales",n:"Nuditos"};
