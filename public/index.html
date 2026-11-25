@@ -75,6 +75,10 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--ambar);outline-offs
 .act{background:rgba(243,238,224,.08);border:1px solid rgba(243,238,224,.2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px}
 .act p{color:var(--lana-2);font-size:15px}
 .act.hecha{border-color:var(--verde);background:rgba(76,192,122,.12)}
+.parte{width:100%;margin-top:6px}
+.parte h3{font-family:var(--display);font-size:19px;margin:0}
+.parte p{margin:2px 0 0;color:var(--lana-2);font-size:15px}
+.parte+.actividades{margin-bottom:10px}
 .act h3 em{font-style:normal;font-family:var(--cuerpo);font-size:13px;font-weight:700;background:var(--verde);color:var(--tinta);padding:2px 9px;border-radius:99px;margin-left:8px;vertical-align:middle}
 .panel .sello{margin-top:0}
 .act .accion{align-self:flex-start;margin-top:auto}
@@ -352,8 +356,9 @@ function ruta(){
 function estacion(){
   var e=EST.filter(function(x){return x.k===S.est})[0],n=banco(e.k).length,jg=JUEGOS[e.k]||[];
   var sl=S.sellos[e.k],est=sl==null?'<span class="sello">Sin sello todavía</span>':(sl>=PASA?'<span class="sello si">Sello ganado · '+Math.round(sl*100)+'%</span>':'<span class="sello casi">Casi · '+Math.round(sl*100)+'%</span>');
-  var h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="ruta">Volver a la ruta</button></div><div class="fila"><h2>'+e.n+'</h2>'+est+'</div>'+(corto()&&(jg.length||e.k==="planta"||e.k==="hilo"||e.k==="fibra")?'<p class="bajada">El sello se gana con la trivia o jugando: elegí lo que más te guste.</p>':(!corto()&&n>=MIN&&(jg.length||e.k==="planta"||e.k==="hilo"||e.k==="fibra")?'<p class="bajada">El sello de esta estación se gana con la trivia. Los juegos y recorridos son para aprender más: no hace falta hacerlos.</p>':''))+'<div class="actividades">';
+  var h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="ruta">Volver a la ruta</button></div><div class="fila"><h2>'+e.n+'</h2>'+est+'</div>'+(corto()&&(jg.length||e.k==="planta"||e.k==="hilo"||e.k==="fibra")?'<p class="bajada">El sello se gana con la trivia o jugando: elegí lo que más te guste.</p>':(!corto()&&n>=MIN&&(jg.length||e.k==="planta"||e.k==="hilo"||e.k==="fibra")?'<div class="parte"><h3>Para ganar el sello</h3><p>Contestá la trivia. Es lo único que hace falta.</p></div>':''))+'<div class="actividades">';
   if(n>=MIN)h+='<div class="act'+(sl!=null?" hecha":"")+'"><h3>Trivia'+(sl!=null?'<em>'+(sl>=PASA?"Hecha":"Intentada")+'</em>':'')+'</h3><p>'+Math.min(largoT(),n)+' preguntas. Con '+Math.ceil(PASA*Math.min(largoT(),n)-1e-9)+' bien, ganás el sello de la estación.</p><button class="accion" type="button" data-ir="quiz">'+(sl!=null?"Repetir":"Empezar")+'</button></div>';
+  var corte=h.length,parte=!corto()&&n>=MIN;
   if(e.k==="esquila"&&VISITA.indexOf(S.perfil)>=0)h+='<div class="act'+(S.hechos.esquilar?" hecha":"")+'"><h3>Hoy esquilás vos'+(S.hechos.esquilar?"<em>Hecho</em>":"")+'</h3><p>Pasá la máquina por la oveja y llevá cada lana a su bolsón. Al final sabés si tu lote lleva grifa.</p><button class="accion" type="button" data-ir="esquilar">'+(S.hechos.esquilar?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="planta")h+='<div class="act'+(S.hechos.tour?" hecha":"")+'"><h3>Recorrido por la planta'+(S.hechos.tour?"<em>Hecho</em>":"")+'</h3><p>Los diez pasos de la lana dentro de nuestra fábrica, de la descarga al top.'+(n<MIN||corto()?" Al completarlo ganás el sello de la estación.":"")+'</p><button class="accion" type="button" data-ir="tour">'+(S.hechos.tour?"Recorrer de nuevo":"Empezar el recorrido")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.prenda?" hecha":"")+'"><h3>¿Qué lana para cada cosa?'+(S.hechos.prenda?"<em>Hecho</em>":"")+'</h3><p>Fina, media o gruesa: elegí la lana para cada prenda.</p><button class="accion" type="button" data-ir="prenda">Jugar</button></div>';
@@ -364,6 +369,7 @@ function estacion(){
   if(e.k==="planta")h+='<div class="act'+(S.hechos.planta?" hecha":"")+'"><h3>Del camión al top'+(S.hechos.planta?"<em>Hecho</em>":"")+'</h3><p>Repaso: ordená los diez pasos de la fábrica, en tres tramos.</p><button class="accion" type="button" data-ir="planta">'+(S.hechos.planta?"Jugar de nuevo":"Jugar")+'</button></div>';
   if(e.k==="fibra")h+='<div class="act'+(S.hechos.ciclo?" hecha":"")+'"><h3>El ciclo de vida de la lana'+(S.hechos.ciclo?"<em>Hecho</em>":"")+'</h3><p>Del campo a tu ropero y de vuelta a la tierra: catorce pasos para ordenar, en tres tramos.</p><button class="accion" type="button" data-ir="ciclo">'+(S.hechos.ciclo?"Jugar de nuevo":"Jugar")+'</button></div>';
   jg.forEach(function(j){h+='<div class="act'+(S.hechos[j.k]?" hecha":"")+'"><h3>'+j.n+(S.hechos[j.k]?"<em>Hecho</em>":"")+'</h3><p>'+j.d+'</p><button class="accion" type="button" data-ir="mini:'+j.k+'">Jugar</button></div>'});
+  if(parte&&h.length>corte)h=h.slice(0,corte)+'</div><div class="parte"><h3>Para aprender más</h3><p>Juegos y recorridos sobre este tema. No dan sello: son formación, para hacer cuando quieras.</p></div><div class="actividades">'+h.slice(corte);
   return h+'</div></section>';
 }
 function quiz(){
