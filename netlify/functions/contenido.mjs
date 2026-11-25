@@ -63,7 +63,8 @@ export default async () => {
     return Response.json(
       { preguntas, recorridos, planta: claves(planta, "valor"), textos: claves(textos, "texto"), ajustes: conf,
         perfiles: perfiles.filter((p) => p.clave) },
-      { headers: { "cache-control": "public, max-age=60, s-maxage=300" } });
+      // La página pide esta dirección con un sello de tiempo que cambia cada 2 minutos, así nunca queda una copia vieja.
+      { headers: { "cache-control": "public, max-age=60", "netlify-cdn-cache-control": "public, max-age=120" } });
   } catch (e) {
     return Response.json({ error: String(e.message || e) }, { status: 502 });
   }
