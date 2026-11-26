@@ -71,7 +71,7 @@ Después de guardarla hay que volver a publicar. Para cambiar la clave se edita 
 Al enlace del juego se le pueden agregar estos datos (en el tablero hay un armador que lo hace solo):
 
 - `?perfil=` fija el público y saltea la elección: `chico`, `grande`, `productor`, `trabajador`, `esquilador`, `consignatario`, `industria`, `tecnico`.
-- `?modo=` fija cómo se juega: `individual`, `grupo` (todos juntos, sin equipos) o `equipos` (todos juntos, en dos equipos).
+- Un enlace sin `?modo=` es siempre individual: cada uno juega en su pantalla y no se pregunta nada. El modo de una sola pantalla es para usar en la planta: `?modo=grupo` (todos juntos, sin equipos), `?modo=equipos` (en dos equipos) o `?modo=elegir` (se pregunta al empezar).
 - `?envio=` pone una etiqueta para ver ese envío por separado en el tablero.
 
 Ejemplo: `https://ruta-de-la-lana.netlify.app/?perfil=productor&envio=remate-marzo`

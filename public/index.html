@@ -332,7 +332,7 @@ var FIJO=null,MODO=null;
 function guardarModo(){try{localStorage.setItem("rutaLanaModo",S.grupo?(S.equipos?"e":"g"):"s")}catch(e){}}
 try{var QS=new URLSearchParams(location.search);RAS.token=QS.get("t");RAS.envio=(QS.get("envio")||"").trim().slice(0,60)||null;
   var qp=(QS.get("perfil")||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();FIJO=ATAJOS[qp]||null;
-  var qm=(QS.get("modo")||"").toLowerCase();MODO=["individual","grupo","equipos"].indexOf(qm)>=0?qm:null}catch(e){}
+  var qm=(QS.get("modo")||"").toLowerCase();MODO=["individual","grupo","equipos","elegir"].indexOf(qm)>=0?qm:null}catch(e){}
 function rasEnviar(c){return fetch("/api/evento",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(c),keepalive:true})}
 function rastro(tipo,d){if(!RAS.on)return;d=d||{};if(!RAS.id){RAS.cola.push([tipo,d]);return}
   rasEnviar({accion:"evento",participante:RAS.id,tipo:tipo,estacion:d.estacion,aciertos:d.aciertos,total:d.total,detalle:d.detalle}).catch(function(){})}
@@ -347,7 +347,8 @@ function registro(){if(!RAS.on)return "";var r=S.reg||{};function v(k){return es
 function inicio(){
   function tarj(p){return '<button class="perfil'+(p.g==="visita"?" grande":"")+'" type="button" data-p="'+p.k+'"><b>'+p.n+'</b><span>'+p.d+'</span></button>'}
   var modo='<section class="grupo"><h2>¿Cómo jugamos?</h2><div class="modo"><button class="pastilla'+(S.grupo?"":" on")+'" type="button" data-ir="modoSolo">Cada uno en su pantalla</button><button class="pastilla'+(S.grupo?" on":"")+'" type="button" data-ir="modoGrupo">Todos juntos, en una pantalla</button></div>'+(S.grupo?'<div class="modo" style="margin-top:10px"><button class="pastilla'+(S.equipos?"":" on")+'" type="button" data-ir="eqNo">Sin equipos</button><button class="pastilla'+(S.equipos?" on":"")+'" type="button" data-ir="eqSi">En dos equipos</button></div><p class="bajada">'+(S.equipos?"Letra grande. El grupo se divide en dos equipos, Verde y Ámbar, que responden una pregunta cada uno, por turnos.":"Letra grande. Todo el grupo responde junto.")+'</p>':'')+'</section>';
-  if(MODO)modo="";
+  // La pregunta de cómo jugar solo aparece con ?modo=elegir (uso en la planta). Un enlace común es siempre individual.
+  if(MODO!=="elegir")modo="";
   if(FIJO){var pf=PERFILES.filter(function(p){return p.k===FIJO})[0];
     return registro()+'<section class="grupo"><h2>Tu recorrido</h2><div class="perfiles"><button class="perfil grande" type="button" data-p="'+pf.k+'"><b>Empezar</b><span>'+pf.d+'</span></button></div></section>'+modo}
   return modo+registro()+'<section class="grupo"><h2>Vengo de visita</h2><div class="perfiles">'+PERFILES.filter(function(p){return p.g==="visita"}).map(tarj).join("")+'</div></section>'
@@ -774,9 +775,9 @@ $("reinicio").addEventListener("click",function(){ir("inicio")});
 function arrancar(prev){
   cargarContenido();
   $("logo").src=LOGO;
-  try{var gm=localStorage.getItem("rutaLanaModo");S.grupo=gm==="g"||gm==="e";S.equipos=gm==="e"}catch(e){}
+  if(MODO==="elegir"){try{var gm=localStorage.getItem("rutaLanaModo");S.grupo=gm==="g"||gm==="e";S.equipos=gm==="e"}catch(e){}}
   // El enlace puede fijar el modo: ?modo=individual, grupo o equipos.
-  if(MODO){S.grupo=MODO!=="individual";S.equipos=MODO==="equipos";guardarModo()}
+  if(MODO==="grupo"||MODO==="equipos"){S.grupo=true;S.equipos=MODO==="equipos"}else if(MODO!=="elegir"){S.grupo=false;S.equipos=false}
   var g=null;try{g=JSON.parse(localStorage.getItem("rutaLana")||"null")}catch(e){}
   var d=(prev&&prev.perfil)?prev:g;
   if(FIJO&&d&&d.perfil!==FIJO){d=null;try{localStorage.removeItem("rutaLanaPid")}catch(e){}}
