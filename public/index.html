@@ -174,6 +174,7 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--ambar);outline-offs
 .diploma .dnombre{font-family:var(--serif);font-style:italic;font-weight:600;font-size:clamp(26px,5.5vw,42px);line-height:1.15;border-bottom:1px solid var(--oro);padding:2px 26px 8px;min-width:min(100%,300px)}
 .diploma .dnombre.vacio{color:#9a927c;font-size:18px;font-style:normal;font-family:inherit;padding-top:20px}
 .diploma .dtitulo{font-family:var(--serif);font-weight:800;font-size:clamp(24px,5vw,38px);line-height:1.1;color:#1f5c3b}
+.diploma .dnota{font-size:11.5px;color:#6b6453;max-width:none;margin-top:4px}
 .diploma .dsellos{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;margin:8px 0 2px}
 .diploma .dsellos span{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;width:74px;line-height:1.15}
 .diploma .dsellos i{width:46px;height:46px;border-radius:50%;border:2px solid var(--oro);background:#fff;display:grid;place-items:center;box-shadow:0 0 0 3px #fbf7ea,0 0 0 4px var(--oro)}
@@ -259,13 +260,13 @@ var EST=[
 ];
 var PERFILES=[
   {k:"Niño o adolescente",n:"Soy chico",d:"Juegos y preguntas para aprender jugando",g:"visita",titulo:"Baqueano de la lana"},
-  {k:"Estudiante",n:"Soy grande",d:"Un recorrido general, sin ser del rubro",g:"visita",titulo:"Conocedor de la lana"},
-  {k:"Productor",n:"Productor",d:"Cría, sanidad, esquila y venta",g:"rubro",titulo:"Productor de punta"},
-  {k:"Trabajador rural",n:"Trabajador rural",d:"El trabajo de todos los días con la majada",g:"rubro",titulo:"Capataz de majada"},
-  {k:"Esquilador",n:"Esquilador",d:"Esquila, acondicionamiento y grifa",g:"rubro",titulo:"Acondicionador de Grifa Verde"},
-  {k:"Consignatario",n:"Consignatario",d:"Lotes, calidad y certificaciones",g:"rubro",titulo:"Clasificador de lotes"},
-  {k:"Industria",n:"Industria",d:"De la lana sucia al top",g:"rubro",titulo:"Maestro de planta"},
-  {k:"Técnico",n:"Técnico",d:"Asesoramiento en sanidad y manejo",g:"rubro",titulo:"Técnico de majada"}
+  {k:"Estudiante",n:"Soy grande",d:"Un recorrido general, sin ser del rubro",g:"visita",titulo:""},
+  {k:"Productor",n:"Productor",d:"Cría, sanidad, esquila y venta",g:"rubro",titulo:""},
+  {k:"Trabajador rural",n:"Trabajador rural",d:"El trabajo de todos los días con la majada",g:"rubro",titulo:""},
+  {k:"Esquilador",n:"Esquilador",d:"Esquila, acondicionamiento y grifa",g:"rubro",titulo:""},
+  {k:"Consignatario",n:"Consignatario",d:"Lotes, calidad y certificaciones",g:"rubro",titulo:""},
+  {k:"Industria",n:"Industria",d:"De la lana sucia al top",g:"rubro",titulo:""},
+  {k:"Técnico",n:"Técnico",d:"Asesoramiento en sanidad y manejo",g:"rubro",titulo:""}
 ];
 var JUEGOS={esquila:[
   {k:"galpon",n:"Qué está mal en el galpón",d:"Encontrá los siete errores antes de que empiece la esquila.",u:"https://claude.ai/artifact/XYqdgSiBY2CMW4ojEtwMsi"}]};
@@ -356,7 +357,7 @@ function ruta(){
   var es=base(),extra=estaciones().filter(function(e){return es.indexOf(e)<0}),hechos=es.filter(function(e){return (S.sellos[e.k]||0)>=PASA}).length,p=perfil();
   function boton(e,i,et){var s=S.sellos[e.k],cl=s==null?"":(s>=PASA?" si":" casi"),tx=s==null?"Sin sello":(s>=PASA?"Sello ganado · "+Math.round(s*100)+"%":"Casi · "+Math.round(s*100)+"%");
     return '<button class="estacion" type="button" data-e="'+e.k+'"><svg viewBox="0 0 32 32" aria-hidden="true">'+e.i+'</svg><span class="num">'+et+'</span><h3>'+e.n+'</h3><span class="det">'+e.d+'</span><span class="sello'+cl+'">'+tx+'</span></button>'}
-  var h='<div class="cabezal"><div class="avance">'+hechos+' de '+es.length+' sellos<small>para recibirte de '+p.titulo+'</small></div><div class="barra"><i style="width:'+(es.length?hechos/es.length*100:0)+'%"></i></div></div>';
+  var h='<div class="cabezal"><div class="avance">'+hechos+' de '+es.length+' sellos<small>'+(S.perfil==="Niño o adolescente"?"para recibirte de "+p.titulo:"para recibir tu diploma")+'</small></div><div class="barra"><i style="width:'+(es.length?hechos/es.length*100:0)+'%"></i></div></div>';
   if(hechos===es.length&&es.length)h+='<div class="fila"><button class="accion" type="button" data-ir="diploma">Ver mi diploma</button></div>';
   h+='<div class="ruta">'+es.map(function(e,i){return boton(e,i,"ESTACIÓN "+(i+1))}).join("")+'</div>';
   if(extra.length)h+='<section class="grupo" style="margin-top:26px"><h2>Si querés seguir</h2><p class="bajada">Estas no hacen falta para el diploma.</p></section><div class="ruta">'+extra.map(function(e,i){return boton(e,i,"EXTRA")}).join("")+'</div>';
@@ -533,7 +534,7 @@ function diploma(){
   var nombre='<div class="dnombre'+(nom?"":" vacio")+'" id="dnom">'+(nom?esc(nom):(S.grupo?"Nombre del grupo":"Nombre y apellido"))+'</div>';
   var cuerpo=ch
     ?'<svg viewBox="0 0 32 32" width="92" height="92" aria-hidden="true">'+IC["ewe"]+'</svg><div class="dceja">¡Lo lograste!</div>'+nombre+'<p>'+(S.grupo?"Juntaron":"Juntaste")+' '+(es.length===1?"el sello":"los "+es.length+" sellos")+' de <b>La ruta de la lana</b> y desde hoy '+(S.grupo?"son":"sos")+'</p><div class="dtitulo">'+p.titulo+'</div>'+sellos
-    :'<img src="'+LOGO+'" alt="Tops Fray Marcos S.A." width="170" height="88"><div class="dceja">Diploma</div><span class="dsub">La ruta de la lana</span><p>Tops Fray Marcos S.A. reconoce a</p>'+nombre+'<p>por completar el recorrido <b>'+esc(p.n==="Soy grande"?"General":p.n)+'</b> y ganar '+(es.length===1?"el sello de su estación":"los "+es.length+" sellos de sus estaciones")+', con el título de</p><div class="dtitulo">'+p.titulo+'</div>'+sellos;
+    :'<img src="'+LOGO+'" alt="Tops Fray Marcos S.A." width="170" height="88"><div class="dceja">Diploma</div><span class="dsub">La ruta de la lana</span><p>Tops Fray Marcos S.A. deja constancia de que</p>'+nombre+'<p>completó satisfactoriamente</p><div class="dtitulo">'+(p.g==="visita"?"el recorrido general":"el recorrido «"+esc(p.n)+"»")+'</div><p>de La ruta de la lana'+(p.g==="visita"||!p.d?"":", sobre "+esc(p.d.charAt(0).toLowerCase()+p.d.slice(1)))+', y ganó '+(es.length===1?"el sello de su estación":"los "+es.length+" sellos de sus estaciones")+'.</p>'+sellos+'<p class="dnota">Actividad de divulgación sobre la lana. No es un título ni una habilitación profesional.</p>';
   var pie='<div class="dpie"><div><span>'+f+'</span><span class="raya">Fecha</span></div><div>'+(ch?'<svg class="lacre" viewBox="0 0 32 32" width="64" height="64" aria-hidden="true">'+IC["rosette"]+'</svg>':'<svg class="lacre" viewBox="0 0 80 100" width="84" height="105" aria-hidden="true"><path d="M24 58 14 98l12-7 8 9 8-36z" fill="#1f5c3b"/><path d="M56 58l10 40-12-7-8 9-8-36z" fill="#2b7a4b"/><polygon points="74.0,36.0 69.5,41.2 71.9,47.6 66.0,51.0 66.0,57.9 59.3,59.0 57.0,65.4 50.3,64.2 45.9,69.5 40.0,66.0 34.1,69.5 29.7,64.2 23.0,65.4 20.7,59.0 14.0,57.9 14.0,51.0 8.1,47.6 10.5,41.2 6.0,36.0 10.5,30.8 8.1,24.4 14.0,21.0 14.0,14.1 20.7,13.0 23.0,6.6 29.7,7.8 34.1,2.5 40.0,6.0 45.9,2.5 50.3,7.8 57.0,6.6 59.3,13.0 66.0,14.1 66.0,21.0 71.9,24.4 69.5,30.8" fill="#c9a44c"/><circle cx="40" cy="36" r="26" fill="#e6c877" stroke="#a8843a" stroke-width="1.5"/><circle cx="40" cy="36" r="21" fill="none" stroke="#a8843a" stroke-width=".8" stroke-dasharray="1.5 2"/><svg x="24" y="20" width="32" height="32" viewBox="0 0 32 32">'+IC["ewe"]+'</svg></svg>')+'</div><div>'+(ch?'<img src="'+LOGO+'" alt="Tops Fray Marcos S.A." width="130" height="68">':'<span>Tops Fray Marcos S.A.</span><span class="raya">Otorga</span>')+'</div></div>';
   return '<section class="diploma'+(ch?" chico":"")+'"><div class="marco">'+(ch?"":'<span class="esq a">'+esq+'</span><span class="esq b">'+esq+'</span><span class="esq c">'+esq+'</span><span class="esq d">'+esq+'</span>')+cuerpo+pie+'</div></section>'
     +'<div class="dipnom noimp"><label for="dipn">'+(S.grupo?"Nombre del grupo para el diploma":"Tu nombre para el diploma")+'</label><input id="dipn" type="text" maxlength="60" autocomplete="name" value="'+esc(nom).replace(/"/g,"&quot;")+'" placeholder="Escribilo acá"></div>'
