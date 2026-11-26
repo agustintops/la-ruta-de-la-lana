@@ -36,6 +36,8 @@ export default async () => {
   if (!id) return Response.json({ error: "Falta SHEET_ID" }, { status: 500 });
   try {
     const [preg, paradas, planta, perfiles, textos, ajustes] = await Promise.all(HOJAS.map((h) => hoja(id, h)));
+    // La pestaña de curiosidades es opcional: si falta o falla, el juego usa las que trae adentro.
+    const curios = await hoja(id, "Curiosidades").catch(() => []);
     const conf = claves(ajustes, "valor");
     const borradores = (conf.mostrar_borradores || "").toLowerCase().startsWith("s");
     const preguntas = [];
@@ -60,8 +62,16 @@ export default async () => {
         o: [s.opcion_correcta, s.opcion_incorrecta], c: 0, i: s.icono });
     }
     for (const k in recorridos) recorridos[k].sort((a, b) => a.orden - b.orden);
+    const curiosidades = [];
+    for (const k of curios) {
+      const estado = (k.estado || "").toLowerCase();
+      if (!(estado === "aprobada" || (borradores && estado === "borrador"))) continue;
+      if (!k.estacion || !k.titulo || !k.texto) continue;
+      curiosidades.push({ e: k.estacion.toLowerCase(), i: k.icono, t: k.titulo, x: k.texto, f: k.fuente,
+        p: (k.perfiles || "").split(",").map((x) => x.trim()).filter(Boolean) });
+    }
     return Response.json(
-      { preguntas, recorridos, planta: claves(planta, "valor"), textos: claves(textos, "texto"), ajustes: conf,
+      { preguntas, recorridos, curiosidades, planta: claves(planta, "valor"), textos: claves(textos, "texto"), ajustes: conf,
         perfiles: perfiles.filter((p) => p.clave) },
       // La página pide esta dirección con un sello de tiempo que cambia cada 2 minutos, así nunca queda una copia vieja.
       { headers: { "cache-control": "public, max-age=60", "netlify-cdn-cache-control": "public, max-age=120" } });

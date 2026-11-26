@@ -83,3 +83,14 @@ El perfil "Primeros pasos" (antes "Soy chico") tiene un recorrido más breve:
 - Las trivias son de 4 preguntas (se cambia en la planilla, pestaña Ajustes, con la clave `preguntas_por_trivia_chicos`).
 - El diploma se gana con cinco estaciones: La oveja, La esquila, La planta, Después del top y La lana. Las demás aparecen como "Extra".
 - El sello también se gana jugando: los recorridos, la mesa de vellones, el galpón y "¿Qué lana para cada cosa?".
+
+## Curiosidades ("¿Sabías que…?")
+
+Cada estación abre con tarjetas de curiosidades. Se editan en la pestaña **Curiosidades** de la planilla:
+
+- `estacion`: una de `oveja`, `campo`, `sanidad`, `esquila`, `planta`, `hilo`, `fibra`, `sello`, `carne`, `uruguay`.
+- `titulo` y `texto`: lo que se lee en la tarjeta. Conviene que el texto no pase de tres líneas.
+- `fuente`: de dónde sale el dato.
+- `icono`: el nombre de uno de los dibujos del juego (por ejemplo `ewe`, `scissors`, `factory`, `sun`). Si se deja vacío, se usa uno genérico.
+- `perfiles`: vacío para todos, o los perfiles separados por coma.
+- `estado`: `Borrador` o `Aprobada`, igual que en las preguntas.
