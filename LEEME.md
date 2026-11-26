@@ -78,7 +78,7 @@ Ejemplo: `https://ruta-de-la-lana.netlify.app/?perfil=productor&envio=remate-mar
 
 ## Recorrido corto para chicos
 
-El perfil "Soy chico" tiene un recorrido más breve:
+El perfil "Primeros pasos" (antes "Soy chico") tiene un recorrido más breve:
 
 - Las trivias son de 4 preguntas (se cambia en la planilla, pestaña Ajustes, con la clave `preguntas_por_trivia_chicos`).
 - El diploma se gana con cinco estaciones: La oveja, La esquila, La planta, Después del top y La lana. Las demás aparecen como "Extra".
