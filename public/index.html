@@ -268,7 +268,13 @@ footer{font-size:13.5px;color:var(--lana-2);max-width:82ch}
 .revC .pastilla{color:var(--tinta);border-color:#8a7f66}
 #revS{margin:0;font-weight:700;min-height:1.2em}
 body.rev{padding-bottom:76px}
-.opina{max-width:520px;margin:26px auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.opina{max-width:720px;margin:26px auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.ovj{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;width:100%}
+.ovj button{background:rgba(243,238,224,.06);border:2px solid rgba(243,238,224,.22);border-radius:12px;padding:6px 0 4px;display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--lana)}
+.ovj button b{font-size:14px}.ovj svg{width:100%;max-width:54px;height:auto}
+.ovj button.on{background:var(--lana);color:var(--tinta);border-color:var(--ambar);transform:scale(1.08)}
+.ovjE{display:flex;justify-content:space-between;width:100%;font-size:13px;opacity:.75}
+@media(max-width:560px){.ovj{grid-template-columns:repeat(5,1fr)}}
 .opina .revM{justify-content:center}.opina .revM button{color:var(--lana);border-color:rgba(243,238,224,.4)}
 .opina .revM button.on{background:var(--lana);color:var(--tinta);border-color:var(--lana)}
 .opina input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--lana-2);background:var(--lana);color:var(--tinta);font:inherit}
@@ -624,7 +630,7 @@ function diploma(){
   return '<section class="diploma'+(ch?" chico":"")+'"><div class="marco">'+(ch?"":'<span class="esq a">'+esq+'</span><span class="esq b">'+esq+'</span><span class="esq c">'+esq+'</span><span class="esq d">'+esq+'</span>')+cuerpo+pie+'</div></section>'
     +'<div class="dipnom noimp"><label for="dipn">'+(S.grupo?"Nombre del grupo para el diploma":"Tu nombre para el diploma")+'</label><input id="dipn" type="text" maxlength="60" autocomplete="name" value="'+esc(nom).replace(/"/g,"&quot;")+'" placeholder="Escribilo acá"></div>'
     +'<div class="fila noimp" style="justify-content:center;margin-top:16px"><button class="accion" type="button" id="dipimp">Imprimir o guardar en PDF</button><button class="accion clara" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="inicio">Elegir otro recorrido</button></div>'
-    +'<div class="opina noimp">'+(S.opinado?"<h3>¡Gracias! Nos sirve mucho.</h3>":'<h3>¿Qué te pareció?</h3><div class="revM"><button type="button" data-op="3">Me encantó</button><button type="button" data-op="2">Estuvo bien</button><button type="button" data-op="1">Me aburrió</button></div><input id="opT" type="text" maxlength="600" placeholder="¿Qué fue lo que más te sorprendió?"><button class="accion" type="button" id="opE">Enviar</button>')+'</div>';
+    +'<div class="opina noimp">'+(S.opinado?"<h3>¡Gracias! Nos sirve mucho.</h3>":'<h3>¿Qué te pareció? Del 1 al 10</h3><div class="ovj">'+[1,2,3,4,5,6,7,8,9,10].map(function(n){return '<button type="button" data-op="'+n+'" aria-label="'+n+' de 10">'+ovejita(n)+'<b>'+n+'</b></button>'}).join("")+'</div><div class="ovjE"><span>No me gustó</span><span>Me encantó</span></div><input id="opT" type="text" maxlength="600" placeholder="¿Qué fue lo que más te sorprendió?"><button class="accion" type="button" id="opE">Enviar</button>')+'</div>';
 }
 // Juego: esquilar la oveja con la máquina, desbordar el vellón en la mesa y llevar cada lana a su bolsón.
 var ESQ=[
@@ -899,7 +905,14 @@ if(REV){document.body.classList.add("rev");
   $("revB").addEventListener("click",revAbrir);$("revX").addEventListener("click",function(){$("revP").hidden=true});$("revE").addEventListener("click",revEnviar);
   $("revP").addEventListener("click",function(ev){if(ev.target===this)this.hidden=true});
   $("revM").addEventListener("click",function(ev){var b=ev.target.closest("[data-m]");if(!b)return;REV.m=REV.m===b.dataset.m?null:b.dataset.m;this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x.dataset.m===REV.m)})})}
-// Opinión al final: una nota y lo que más sorprendió.
+// Opinión al final: una nota del 1 al 10 con ovejitas, de triste a contenta, y lo que más sorprendió.
+function ovejita(n){var t=(n-1)/9,c=(-4.5+11*t).toFixed(1),lana="",P=[[9,9],[14,6],[20,6],[25,9],[6,14],[28,14],[17,5]];
+  P.forEach(function(q){lana+='<circle cx="'+q[0]+'" cy="'+q[1]+'" r="5.2"/>'});
+  var cejas=n<=3?'<path d="M11 14.5l4 1.6M23 14.5l-4 1.6" stroke="#f3eee0" stroke-width="1.3" stroke-linecap="round"/>':"";
+  var ojos=n>=9?'<path d="M11.3 18q2-2.6 4 0M18.7 18q2-2.6 4 0" fill="none" stroke="#f3eee0" stroke-width="1.5" stroke-linecap="round"/>':'<circle cx="13.3" cy="17.6" r="1.7" fill="#f3eee0"/><circle cx="20.7" cy="17.6" r="1.7" fill="#f3eee0"/>';
+  var mej=n>=7?'<circle cx="10.6" cy="21.6" r="1.6" fill="#e58a7b" opacity=".8"/><circle cx="23.4" cy="21.6" r="1.6" fill="#e58a7b" opacity=".8"/>':"";
+  var lag=n===1?'<path d="M12.6 20.2q-1.4 2.2 0 3q1.4-.8 0-3z" fill="#7fb8e6"/>':"";
+  return '<svg viewBox="0 0 34 32" width="40" height="38" aria-hidden="true"><ellipse cx="5.5" cy="16" rx="3.6" ry="2" fill="#4a3b34" transform="rotate(-25 5.5 16)"/><ellipse cx="28.5" cy="16" rx="3.6" ry="2" fill="#4a3b34" transform="rotate(25 28.5 16)"/><g fill="#f3eee0" stroke="#cfc6ad" stroke-width=".6">'+lana+'</g><ellipse cx="17" cy="19" rx="9" ry="10" fill="#4a3b34"/>'+cejas+ojos+mej+lag+'<path d="M12.5 24.5Q17 '+(24.5+ +c).toFixed(1)+' 21.5 24.5" fill="none" stroke="#f3eee0" stroke-width="1.6" stroke-linecap="round"/></svg>'}
 $("vista").addEventListener("click",function(ev){var b=ev.target.closest("[data-op]");
   if(b){S.opN=+b.dataset.op;document.querySelectorAll("[data-op]").forEach(function(x){x.classList.toggle("on",x===b)});return}
   if(ev.target.id==="opE"){var t=($("opT").value||"").trim();if(!S.opN&&!t)return;rastro("opinion",{detalle:{nota:S.opN||null,texto:t.slice(0,600)}});S.opinado=true;var o=document.querySelector(".opina");if(o)o.innerHTML="<h3>¡Gracias! Nos sirve mucho.</h3>"}});

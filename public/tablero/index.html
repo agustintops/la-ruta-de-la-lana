@@ -239,12 +239,12 @@ function pintar(){
     {t:"Comentario",f:function(r){return esc(r.comentario||"")}},
     {t:"Estado",f:function(r){return esc(r.estado)}}
   ],D.revisiones||[]);
-  var op=D.opiniones||[],on=[0,0,0,0];op.forEach(function(o){if(o.nota)on[o.nota]++});
-  $("opres").textContent=op.length?"Me encantó: "+on[3]+" · Estuvo bien: "+on[2]+" · Me aburrió: "+on[1]:"La pregunta aparece debajo del diploma.";
+  var op=D.opiniones||[],cn=op.filter(function(o){return o.nota}),su=0;cn.forEach(function(o){su+=o.nota});
+  $("opres").textContent=cn.length?"Nota promedio: "+(su/cn.length).toFixed(1).replace(".",",")+" de 10 · "+cn.length+(cn.length===1?" respuesta":" respuestas")+" · con 9 o 10: "+cn.filter(function(o){return o.nota>=9}).length+" · con 6 o menos: "+cn.filter(function(o){return o.nota<=6}).length:"La pregunta aparece debajo del diploma: una nota del 1 al 10.";
   tabla($("opiniones"),[
     {t:"Fecha",f:function(o){return esc(o.creado)}},
     {t:"Perfil",f:function(o){return esc(o.perfil||"–")}},
-    {t:"Nota",f:function(o){return ["–","Me aburrió","Estuvo bien","Me encantó"][o.nota||0]}},
+    {t:"Nota",n:1,f:function(o){return o.nota?o.nota+" / 10":"–"}},
     {t:"Lo que más sorprendió",f:function(o){return esc(o.texto||"")}}
   ],op);
   tabla($("grupos"),[
