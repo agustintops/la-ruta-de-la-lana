@@ -247,6 +247,33 @@ button:disabled.accion{opacity:.45;box-shadow:none;cursor:default}
 footer{font-size:13.5px;color:var(--lana-2);max-width:82ch}
 @media (max-width:520px){.estacion svg{width:48px;height:48px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.lav .marca,.lavres{opacity:1}}
+.tira{display:flex;gap:6px}
+.tp{flex:1 1 0;min-width:0;height:36px;border-radius:999px;border:2px solid rgba(243,238,224,.25);background:#18312e;color:var(--lana-2);font-weight:800;font-size:14px;padding:0}
+.tp.visto{background:#1f5a3a;border-color:var(--verde);color:var(--lana)}
+.tp.sigue{border-color:var(--ambar);color:var(--ambar)}
+.tp.aca{box-shadow:0 0 0 3px var(--lana)}
+.tp.cerrado{opacity:.45}
+.fcab{display:flex;gap:14px;align-items:center}.fcab h2{margin:2px 0 0}
+#revB{position:fixed;right:14px;bottom:14px;z-index:60;background:var(--ambar);color:var(--tinta);border:0;border-radius:999px;padding:13px 20px;font-weight:800;font-size:16px;box-shadow:0 6px 18px rgba(0,0,0,.45)}
+#revP{position:fixed;inset:0;z-index:70;background:rgba(5,14,13,.72);display:flex;align-items:flex-end;justify-content:center}
+#revP[hidden]{display:none}
+.revC{background:var(--lana);color:var(--tinta);width:min(560px,100%);max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:18px;display:flex;flex-direction:column;gap:10px}
+.revC b.t{font-family:var(--display);font-size:20px}
+.revQ{margin:0;font-size:14px;background:rgba(0,0,0,.07);border-radius:10px;padding:8px 10px}
+.revM{display:flex;flex-wrap:wrap;gap:8px}
+.revM button{border:2px solid #8a7f66;background:transparent;color:var(--tinta);border-radius:999px;padding:8px 14px;font-weight:700;font-size:15px}
+.revM button.on{background:var(--tinta);color:var(--lana);border-color:var(--tinta)}
+.revC textarea,.revC input{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid #8a7f66;background:#fff;color:var(--tinta)}
+.revC textarea{min-height:90px;resize:vertical}
+.revC .pastilla{color:var(--tinta);border-color:#8a7f66}
+#revS{margin:0;font-weight:700;min-height:1.2em}
+body.rev{padding-bottom:76px}
+.opina{max-width:520px;margin:26px auto 0;display:flex;flex-direction:column;gap:10px;align-items:center;text-align:center}
+.opina .revM{justify-content:center}.opina .revM button{color:var(--lana);border-color:rgba(243,238,224,.4)}
+.opina .revM button.on{background:var(--lana);color:var(--tinta);border-color:var(--lana)}
+.opina input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--lana-2);background:var(--lana);color:var(--tinta);font:inherit}
+@media(max-width:640px){.dentro #bajada,.dentro #logo{display:none}.dentro h1{font-size:22px;margin:0}}
+@media print{#revB,#revP,.opina{display:none!important}}
 </style>
 </head>
 <body>
@@ -373,9 +400,11 @@ var RAS={on:location.protocol.indexOf("http")===0&&!/claude|anthropic/.test(loca
 var ATAJOS={chico:"Niño o adolescente",grande:"Estudiante",estudiante:"Estudiante",productor:"Productor",trabajador:"Trabajador rural",esquilador:"Esquilador",consignatario:"Consignatario",industria:"Industria",tecnico:"Técnico",consumidor:"Consumidor",uso:"Consumidor"};
 var FIJO=null,MODO=null;
 function guardarModo(){try{localStorage.setItem("rutaLanaModo",S.grupo?(S.equipos?"e":"g"):"s")}catch(e){}}
+var REV=null;
 try{var QS=new URLSearchParams(location.search);RAS.token=QS.get("t");RAS.envio=(QS.get("envio")||"").trim().slice(0,60)||null;
   var qp=(QS.get("perfil")||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();FIJO=ATAJOS[qp]||null;
-  var qm=(QS.get("modo")||"").toLowerCase();MODO=["individual","grupo","equipos","elegir"].indexOf(qm)>=0?qm:null}catch(e){}
+  var qm=(QS.get("modo")||"").toLowerCase();MODO=["individual","grupo","equipos","elegir"].indexOf(qm)>=0?qm:null;
+  var qr=QS.get("revisor");if(qr!=null){REV={n:(qr&&qr!=="1"?qr.slice(0,60):"")||localStorage.getItem("rutaLanaRev")||"",ok:0,m:null}}}catch(e){}
 function rasEnviar(c){return fetch("/api/evento",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(c),keepalive:true})}
 function rastro(tipo,d){if(!RAS.on)return;d=d||{};if(!RAS.id){RAS.cola.push([tipo,d]);return}
   rasEnviar({accion:"evento",participante:RAS.id,tipo:tipo,estacion:d.estacion,aciertos:d.aciertos,total:d.total,detalle:d.detalle}).catch(function(){})}
@@ -445,7 +474,7 @@ function quiz(){
   var Q=S.quiz,q=Q.lista[Q.i],letras="ABCD",e=estK(S.est);
   var turno="";if(S.grupo&&S.equipos){var s=[0,0];Q.res.forEach(function(r,i){if(r)s[i%2]++});var t=Q.i%2;turno='<div class="turno"><span class="eq e0'+(t===0?" va":"")+'">Equipo Verde · '+s[0]+'</span><span class="eq e1'+(t===1?" va":"")+'">Equipo Ámbar · '+s[1]+'</span><span class="bajada">Responde el equipo '+(t===0?"Verde":"Ámbar")+'</span></div>'}
   var pts='<div class="puntos">'+Q.lista.map(function(_,i){return '<i class="'+(i<Q.res.length?(Q.res[i]?"bien":"mal"):(i===Q.i?"ahora":""))+'"></i>'}).join("")+'</div>';
-  var h='<section class="panel"><div class="fila" style="justify-content:space-between"><span class="ceja">'+e.n+(Q.rep?" · Repaso":niveles(S.est).length>1?" · Nivel "+NIVELES[Q.nv||1]:"")+' · '+esc(q.t)+'</span>'+pts+'</div>'+turno+'<p class="pregunta">'+esc(q.q)+'</p><div class="opciones">';
+  var h='<section class="panel"><div class="fila" style="justify-content:space-between"><span class="ceja">'+e.n+(Q.rep?" · Repaso":niveles(S.est).length>1?" · Nivel "+NIVELES[Q.nv||1]:"")+' · '+esc(q.t)+(REV?" · "+q.id:"")+'</span>'+pts+'</div>'+turno+'<p class="pregunta">'+esc(q.q)+'</p><div class="opciones">';
   Q.ord[Q.i].forEach(function(i,pos){var o=q.o[i],cl="";if(Q.elegida!=null){cl=i===q.c?" correcta":(i===Q.elegida?" errada":"")}
     h+='<button class="op'+cl+'" type="button" data-o="'+i+'"'+(Q.elegida!=null?" disabled":"")+'><b>'+letras[pos]+'</b><span>'+esc(o)+'</span></button>'});
   h+='</div>';
@@ -486,21 +515,17 @@ function planta(){
 }
 function nuevoTramo(k,n,err){var l=ORDEN[k].tramos[n].p.map(function(_,i){return i});S.planta={k:k,tramo:n,orden:azar(l),hechos:[],errores:err||0,mal:null}}
 function tour(){
-  var T=S.tour,R=TOURS[T.k||"planta"],LUG=R.l,W=1000,H=220+(R.filas.length-1)*210,h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="estacion">Volver</button><span class="ceja">'+R.tit+' · '+T.vistos.length+' de '+LUG.length+'</span></div>';
-  var filas=R.filas,pos=[];filas.forEach(function(f,j){f.forEach(function(x){pos.push([x,110+j*210])})});
-  var g='<svg class="plano" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Plano de la planta"><path d="M'+pos.map(function(p){return p[0]+" "+p[1]}).join(" L")+'" fill="none" stroke="rgba(243,238,224,.28)" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="2 26"/>';
-  LUG.forEach(function(L,i){var p=pos[i],visto=T.vistos.indexOf(i)>=0,sig=i===T.vistos.length,cl=visto?"visto":(sig?"sigue":"cerrado");
-    g+='<g class="lugar '+cl+'" data-lugar="'+i+'" tabindex="'+(visto||sig?0:-1)+'" transform="translate('+(p[0]-105)+','+(p[1]-78)+')"><rect width="210" height="156" rx="16"/><svg x="73" y="14" width="64" height="64" viewBox="0 0 32 32">'+L.i+'</svg><text x="105" y="104" text-anchor="middle" class="nl">'+(i+1)+'</text><text x="105" y="132" text-anchor="middle" class="tl"'+(L.n.length>19?' style="font-size:14.5px"':'')+'>'+L.n+'</text></g>'});
-  h+=g+'</svg>';
-  if(T.abierto!=null){var L=LUG[T.abierto],ya=T.vistos.indexOf(T.abierto)>=0;
-    h+='<div class="ficha"><h2>'+(T.abierto+1)+'. '+L.n+'</h2>';
-    // Primero la pregunta; el texto de la parada aparece recién al responder.
-    if(ya&&T.resp==null)h+='<p class="pregunta">'+L.t+'</p>';
-    else{h+='<p class="ceja">'+(T.resp==null?"Antes de entrar, pensalo":"La pregunta")+'</p><p class="pregunta">'+L.q+'</p><div class="opciones">'+T.orden.map(function(k){var cl=T.resp==null?"":(k===L.c?" correcta":(k===T.resp?" errada":""));return '<button class="op'+cl+'" type="button" data-resp="'+k+'"'+(T.resp!=null?" disabled":"")+'><span>'+L.o[k]+'</span></button>'}).join("")+'</div>'}
-    if(T.resp!=null)h+='<div class="explica'+(T.resp===L.c?"":" mal")+'"><strong>'+(T.resp===L.c?"Correcto":"No era esa")+'</strong><span class="pq">'+L.t+'</span></div><div class="fila"><button class="accion" type="button" data-ir="'+(T.vistos.length===LUG.length?"estacion":"tourSigue")+'" id="sigue">'+(T.vistos.length===LUG.length?"Terminar el recorrido":"Seguir al próximo lugar")+'</button></div>';
-    h+='</div>'}
-  else h+='<p class="bajada">Tocá el lugar que late para entrar.</p>';
-  return h+'</section>';
+  var T=S.tour,R=TOURS[T.k||"planta"],LUG=R.l,N=LUG.length,fin=T.vistos.length===N;
+  if(T.abierto==null)T.abierto=Math.min(T.vistos.length,N-1);
+  var a=T.abierto,L=LUG[a],ya=T.vistos.indexOf(a)>=0,ult=a===N-1;
+  var h='<section class="panel"><div class="fila"><button class="pastilla" type="button" data-ir="estacion">Volver</button><span class="ceja">'+R.tit+'</span></div>';
+  h+='<div class="tira">'+LUG.map(function(X,i){var v=T.vistos.indexOf(i)>=0,sg=i===T.vistos.length;return '<button type="button" class="tp '+(v?"visto":sg?"sigue":"cerrado")+(i===a?" aca":"")+'" data-lugar="'+i+'"'+(v||sg?"":" disabled")+' aria-label="'+(i+1)+'. '+X.n+'">'+(i+1)+'</button>'}).join("")+'</div>';
+  h+='<div class="ficha"><div class="fcab"><svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true">'+L.i+'</svg><div><span class="ceja">Paso '+(a+1)+' de '+N+'</span><h2>'+L.n+'</h2></div></div>';
+  // Primero la pregunta; el texto de la parada aparece recién al responder.
+  if(ya&&T.resp==null)h+='<p class="pregunta">'+L.t+'</p><div class="fila"><button class="accion" type="button" data-ir="'+(fin?"estacion":"tourSigue")+'" id="sigue">'+(fin?"Terminar el recorrido":"Seguir donde iba")+'</button></div>';
+  else{h+='<p class="pregunta">'+L.q+'</p><div class="opciones">'+T.orden.map(function(k){var cl=T.resp==null?"":(k===L.c?" correcta":(k===T.resp?" errada":""));return '<button class="op'+cl+'" type="button" data-resp="'+k+'"'+(T.resp!=null?" disabled":"")+'><span>'+L.o[k]+'</span></button>'}).join("")+'</div>'}
+  if(T.resp!=null)h+='<div class="explica'+(T.resp===L.c?"":" mal")+'"><strong>'+(T.resp===L.c?"Correcto":"No era esa")+'</strong><span class="pq">'+L.t+'</span></div><div class="fila"><button class="accion" type="button" data-ir="'+(fin?"estacion":"tourSigue")+'" id="sigue">'+(fin?"Terminar el recorrido":"Siguiente: "+LUG[Math.min(T.vistos.length,N-1)].n+" →")+'</button></div>';
+  return h+'</div></section>';
 }
 function lavadero(){
   var L=S.lav,N=["Remojo","Lavado","Enjuague"],TT=["36°","65°","80°"],AG=["#4aa3c7","#e0913a","#d9482f"],listo=L.b.every(function(b){return b.t!=null});
@@ -598,7 +623,8 @@ function diploma(){
   var pie='<div class="dpie"><div><span>'+f+'</span><span class="raya">Fecha</span></div><div>'+(ch?'<svg class="lacre" viewBox="0 0 32 32" width="64" height="64" aria-hidden="true">'+IC["rosette"]+'</svg>':'<svg class="lacre" viewBox="0 0 80 100" width="84" height="105" aria-hidden="true"><path d="M24 58 14 98l12-7 8 9 8-36z" fill="#1f5c3b"/><path d="M56 58l10 40-12-7-8 9-8-36z" fill="#2b7a4b"/><polygon points="74.0,36.0 69.5,41.2 71.9,47.6 66.0,51.0 66.0,57.9 59.3,59.0 57.0,65.4 50.3,64.2 45.9,69.5 40.0,66.0 34.1,69.5 29.7,64.2 23.0,65.4 20.7,59.0 14.0,57.9 14.0,51.0 8.1,47.6 10.5,41.2 6.0,36.0 10.5,30.8 8.1,24.4 14.0,21.0 14.0,14.1 20.7,13.0 23.0,6.6 29.7,7.8 34.1,2.5 40.0,6.0 45.9,2.5 50.3,7.8 57.0,6.6 59.3,13.0 66.0,14.1 66.0,21.0 71.9,24.4 69.5,30.8" fill="#c9a44c"/><circle cx="40" cy="36" r="26" fill="#e6c877" stroke="#a8843a" stroke-width="1.5"/><circle cx="40" cy="36" r="21" fill="none" stroke="#a8843a" stroke-width=".8" stroke-dasharray="1.5 2"/><svg x="24" y="20" width="32" height="32" viewBox="0 0 32 32">'+IC["ewe"]+'</svg></svg>')+'</div><div>'+(ch?'<img src="'+LOGO+'" alt="Tops Fray Marcos S.A." width="130" height="68">':'<span>Tops Fray Marcos S.A.</span><span class="raya">Otorga</span>')+'</div></div>';
   return '<section class="diploma'+(ch?" chico":"")+'"><div class="marco">'+(ch?"":'<span class="esq a">'+esq+'</span><span class="esq b">'+esq+'</span><span class="esq c">'+esq+'</span><span class="esq d">'+esq+'</span>')+cuerpo+pie+'</div></section>'
     +'<div class="dipnom noimp"><label for="dipn">'+(S.grupo?"Nombre del grupo para el diploma":"Tu nombre para el diploma")+'</label><input id="dipn" type="text" maxlength="60" autocomplete="name" value="'+esc(nom).replace(/"/g,"&quot;")+'" placeholder="Escribilo acá"></div>'
-    +'<div class="fila noimp" style="justify-content:center;margin-top:16px"><button class="accion" type="button" id="dipimp">Imprimir o guardar en PDF</button><button class="accion clara" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="inicio">Elegir otro recorrido</button></div>';
+    +'<div class="fila noimp" style="justify-content:center;margin-top:16px"><button class="accion" type="button" id="dipimp">Imprimir o guardar en PDF</button><button class="accion clara" type="button" data-ir="ruta">Volver a la ruta</button><button class="accion clara" type="button" data-ir="inicio">Elegir otro recorrido</button></div>'
+    +'<div class="opina noimp">'+(S.opinado?"<h3>¡Gracias! Nos sirve mucho.</h3>":'<h3>¿Qué te pareció?</h3><div class="revM"><button type="button" data-op="3">Me encantó</button><button type="button" data-op="2">Estuvo bien</button><button type="button" data-op="1">Me aburrió</button></div><input id="opT" type="text" maxlength="600" placeholder="¿Qué fue lo que más te sorprendió?"><button class="accion" type="button" id="opE">Enviar</button>')+'</div>';
 }
 // Juego: esquilar la oveja con la máquina, desbordar el vellón en la mesa y llevar cada lana a su bolsón.
 var ESQ=[
@@ -801,7 +827,7 @@ function raza(){
 }
 function pintar(){
   var v={inicio:inicio,ruta:ruta,estacion:estacion,quiz:quiz,resultado:resultado,planta:planta,tour:tour,lav:lavadero,lote:lote,prenda:prenda,mini:mini,diploma:diploma,esq:esquilar,pei:peinadora,raza:raza}[S.vista]();
-  document.body.classList.toggle("gm",!!S.grupo);
+  document.body.classList.toggle("gm",!!S.grupo);document.body.classList.toggle("dentro",["inicio","ruta","diploma"].indexOf(S.vista)<0);
   $("vista").innerHTML=v;if(S.vista==="mini")miniCargar();$("reinicio").hidden=S.vista==="inicio";
   var p=perfil();
   $("bajada").textContent=S.vista==="inicio"?"Del campo a la planta, estación por estación. Juntá los sellos y recibite. "+(FIJO?"Este recorrido está armado para: "+PERFILES.filter(function(x){return x.k===FIJO})[0].n+".":"Elegí quién sos para empezar."):"Recorrido: "+p.n+". Juntá los sellos de cada estación.";
@@ -820,7 +846,7 @@ function ir(a){
     S.quiz={lista:l,ord:l.map(function(q){return azar(q.o.map(function(_,i){return i}))}),i:0,res:[],elegida:null,nv:nv};S.vista="quiz";guardar()}
   else if(a==="sigue"){var Q=S.quiz;if(Q.i<Q.lista.length-1){Q.i++;Q.elegida=null}else if(Q.rep){rastro("juego",{estacion:"repaso-"+S.est,aciertos:Q.res.filter(Boolean).length,total:Q.lista.length});S.vista="resultado"}
     else{var pc=Q.res.filter(Boolean).length/Q.lista.length;S.sellos[S.est]=Math.max(S.sellos[S.est]||0,pc);if(pc>=PASA)S.niv[S.est]=Math.max(S.niv[S.est]||0,Q.nv||1);guardar();var rd={estacion:S.est,aciertos:Q.res.filter(Boolean).length,total:Q.lista.length,detalle:{nivel:Q.nv||1}};rastro("trivia",rd);if(pc>=PASA)rastro("sello",rd);S.vista="resultado"}}
-  else if(a==="tour"||a==="tour2"){S.tour={k:a==="tour2"?"despues":"planta",vistos:[],abierto:null,resp:null,orden:[0,1],errores:0};S.vista="tour"}
+  else if(a==="tour"||a==="tour2"){S.tour={k:a==="tour2"?"despues":"planta",vistos:[],abierto:0,resp:null,orden:azar([0,1]),errores:0};S.vista="tour"}
   else if(a==="raza"){razaNueva();S.vista="raza"}
   else if(a==="razaSig"){var Z=S.raza;Z.i++;Z.resp=null;Z.ops=azar([0,1,2]);if(Z.i>=Z.orden.length){var zb=Z.res.filter(Boolean).length;S.hechos.raza=true;selloJuego("oveja",zb/Z.orden.length);guardar();rastro("juego",{estacion:"razas",aciertos:zb,total:Z.orden.length})}}
   else if(a==="curSig"||a==="curAnt"){var cq=curios(S.est),ci=curI(S.est,cq.length)+(a==="curSig"?1:-1);S.cur.i=Math.max(0,Math.min(cq.length-1,ci));
@@ -836,15 +862,47 @@ function ir(a){
   else if(a==="loteGo"){loteCorrer()}
   else if(a==="prenda"){S.prenda={orden:azar(PRENDAS.map(function(_,k){return k})),i:0,resp:null,res:[]};S.vista="prenda"}
   else if(a==="prendaSig"){var PP=S.prenda;PP.i++;PP.resp=null;if(PP.i>=PP.orden.length){var pb=PP.res.filter(Boolean).length;rastro("juego",{estacion:"prenda",aciertos:pb,total:PP.orden.length});if(pb===PP.orden.length){S.hechos.prenda=true;selloJuego("fibra",1);guardar()}}}
-  else if(a==="tourSigue"){S.tour.abierto=null;S.tour.resp=null}
+  else if(a==="tourSigue"){S.tour.abierto=null;S.tour.resp=null;S.tour.orden=azar([0,1])}
   else if(a==="planta"||a==="ciclo"||a==="anio"){nuevoTramo(a,0,0);S.vista="planta";a="planta"}
   else if(a==="tramo"){nuevoTramo(S.planta.k,S.planta.tramo+1,S.planta.errores)}
   else if(a==="diploma"){rastro("diploma",{});S.vista=a}
-  else if(a==="inicio"){RAS.id=null;RAS.cola=[];S.reg={};S.dipNombre=null;try{localStorage.removeItem("rutaLanaPid")}catch(e){}S.perfil=null;S.sellos={};S.niv={};S.hechos={};S.colas={};S.vista="inicio";guardar()}
+  else if(a==="inicio"){RAS.id=null;RAS.cola=[];S.reg={};S.dipNombre=null;S.opinado=false;S.opN=0;try{localStorage.removeItem("rutaLanaPid")}catch(e){}S.perfil=null;S.sellos={};S.niv={};S.hechos={};S.colas={};S.vista="inicio";guardar()}
   else S.vista=a;
   pintar();window.scrollTo(0,0);
   if(a==="sigue"||a==="quiz"||a==="repaso"){var o=document.querySelector(".op");if(o)o.focus({preventScroll:true})}
 }
+// Modo revisor (?revisor=1): un botón fijo para marcar o comentar lo que se está viendo.
+var REVM=["Tiene un error","No se entiende","Muy fácil","Muy difícil","No funciona bien","Está bien","Tengo una idea"];
+function revCtx(){var v=S.vista,e=S.est?estK(S.est).n:"",c={pantalla:v,ref:"",titulo:""};
+  try{
+  if(v==="quiz"&&S.quiz){var q=S.quiz.lista[S.quiz.i];c.pantalla="Trivia · "+e;c.ref=q.id;c.titulo=q.q}
+  else if(v==="tour"&&S.tour){var R=TOURS[S.tour.k||"planta"],a=S.tour.abierto||0;c.pantalla=R.tit;c.ref="Paso "+(a+1);c.titulo=R.l[a].n}
+  else if(v==="estacion"){c.pantalla="Estación · "+e;var cq=curios(S.est);if(cq.length){c.ref="Curiosidad";c.titulo=cq[curI(S.est,cq.length)].t}}
+  else if(v==="planta"&&S.planta){c.pantalla="Juego de ordenar";c.ref=S.planta.k;c.titulo=ORDEN[S.planta.k].t}
+  else if(v==="mini"){c.pantalla="Juego";c.ref=S.mini||""}
+  else{c.pantalla={esq:"Juego · Hoy esquilás vos",pei:"Juego · Del mechón al top",raza:"Juego · Razas",lav:"Juego · Lavadero",lote:"Juego · Armar el lote",prenda:"Juego · Prendas",diploma:"Diploma",ruta:"La ruta",inicio:"Inicio",resultado:"Resultado · "+e}[v]||v}
+  }catch(x){}
+  return c}
+function revAbrir(){var c=revCtx();REV.c=c;REV.m=null;
+  $("revQ").textContent=c.pantalla+(c.ref?" · "+c.ref:"")+(c.titulo?" · "+c.titulo:"");
+  $("revM").innerHTML=REVM.map(function(m){return '<button type="button" data-m="'+m+'">'+m+'</button>'}).join("");
+  $("revT").value="";$("revN").value=REV.n;$("revS").textContent="";$("revE").disabled=false;$("revP").hidden=false}
+function revEnviar(){var t=$("revT").value.trim(),c=REV.c;REV.n=$("revN").value.trim();try{localStorage.setItem("rutaLanaRev",REV.n)}catch(e){}
+  if(!REV.m&&!t){$("revS").textContent="Elegí una opción o escribí algo.";return}
+  $("revE").disabled=true;$("revS").textContent="Enviando…";
+  rasEnviar({accion:"revision",participante:RAS.id,revisor:REV.n,perfil:S.perfil,pantalla:c.pantalla,ref:c.ref,titulo:c.titulo,marca:REV.m,comentario:t})
+    .then(function(r){if(!r.ok)throw 0;REV.ok++;$("revS").textContent="Enviado. ¡Gracias!";$("revB").textContent="✎ Comentar esto · "+REV.ok+(REV.ok===1?" enviado":" enviados");setTimeout(function(){$("revP").hidden=true},800)})
+    .catch(function(){$("revE").disabled=false;$("revS").textContent="No se pudo enviar. Probá de nuevo."})}
+if(REV){document.body.classList.add("rev");
+  var rd=document.createElement("div");rd.innerHTML='<button id="revB" type="button">✎ Comentar esto</button><div id="revP" hidden><div class="revC"><b class="t">Tu comentario</b><p class="revQ" id="revQ"></p><div class="revM" id="revM"></div><textarea id="revT" maxlength="1500" placeholder="Contanos qué viste (opcional)"></textarea><input id="revN" type="text" maxlength="60" placeholder="Tu nombre" autocomplete="name"><div class="fila"><button class="accion" type="button" id="revE">Enviar</button><button class="pastilla" type="button" id="revX">Cancelar</button></div><p id="revS" role="status"></p></div></div>';
+  while(rd.firstChild)document.body.appendChild(rd.firstChild);
+  $("revB").addEventListener("click",revAbrir);$("revX").addEventListener("click",function(){$("revP").hidden=true});$("revE").addEventListener("click",revEnviar);
+  $("revP").addEventListener("click",function(ev){if(ev.target===this)this.hidden=true});
+  $("revM").addEventListener("click",function(ev){var b=ev.target.closest("[data-m]");if(!b)return;REV.m=REV.m===b.dataset.m?null:b.dataset.m;this.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x.dataset.m===REV.m)})})}
+// Opinión al final: una nota y lo que más sorprendió.
+$("vista").addEventListener("click",function(ev){var b=ev.target.closest("[data-op]");
+  if(b){S.opN=+b.dataset.op;document.querySelectorAll("[data-op]").forEach(function(x){x.classList.toggle("on",x===b)});return}
+  if(ev.target.id==="opE"){var t=($("opT").value||"").trim();if(!S.opN&&!t)return;rastro("opinion",{detalle:{nota:S.opN||null,texto:t.slice(0,600)}});S.opinado=true;var o=document.querySelector(".opina");if(o)o.innerHTML="<h3>¡Gracias! Nos sirve mucho.</h3>"}});
 $("vista").addEventListener("click",function(ev){
   var t=ev.target.closest("[data-p],[data-e],[data-ir],[data-o],[data-paso],[data-lugar],[data-resp],[data-lt],[data-lj],[data-fardo],[data-lana]");if(!t)return;
   if(t.dataset.lana!=null){var PR=S.prenda;if(PR.resp!=null)return;PR.resp=+t.dataset.lana;PR.res.push(PR.resp===PRENDAS[PR.orden[PR.i]].c);pintar();var sb=$("sigue");if(sb)sb.focus({preventScroll:true});return}
@@ -853,11 +911,11 @@ $("vista").addEventListener("click",function(ev){
   if(t.dataset.lugar!=null){var T=S.tour,k=+t.dataset.lugar;if(k>T.vistos.length)return;T.abierto=k;T.resp=null;T.orden=azar([0,1]);pintar();var f=document.querySelector(".ficha");if(f)f.scrollIntoView({block:"nearest",behavior:"smooth"});return}
   if(t.dataset.resp!=null){var T2=S.tour;if(T2.resp!=null)return;T2.resp=+t.dataset.resp;var R2=TOURS[T2.k||"planta"];if(T2.resp!==R2.l[T2.abierto].c)T2.errores++;if(T2.vistos.indexOf(T2.abierto)<0)T2.vistos.push(T2.abierto);
     if(T2.vistos.length===R2.l.length){rastro("juego",{estacion:R2.hecho,aciertos:R2.l.length-T2.errores,total:R2.l.length});S.hechos[R2.hecho]=true;var se=R2.hecho==="tour"?"planta":"hilo";if(banco(se).length<MIN)S.sellos[se]=Math.max(S.sellos[se]||0,1-T2.errores/R2.l.length);else selloJuego(se,1-T2.errores/R2.l.length);guardar()}
-    pintar();var b=$("sigue");if(b)b.focus({preventScroll:true});return}
+    pintar();var b=$("sigue");if(b){b.focus({preventScroll:true});b.scrollIntoView({block:"nearest",behavior:"smooth"})}return}
   if(t.dataset.p){S.perfil=t.dataset.p;S.sellos={};S.niv={};S.hechos={};S.colas={};guardar();rasAlta();ir("ruta")}
   else if(t.dataset.e){S.est=t.dataset.e;ir("estacion")}
   else if(t.dataset.ir){ir(t.dataset.ir)}
-  else if(t.dataset.o!=null){var Q=S.quiz;if(Q.elegida!=null)return;Q.elegida=+t.dataset.o;Q.res.push(Q.elegida===Q.lista[Q.i].c);rastro("respuesta",{estacion:S.est,detalle:{pregunta:Q.lista[Q.i].id,bien:Q.elegida===Q.lista[Q.i].c}});pintar();var s=$("sigue");if(s)s.focus({preventScroll:true})}
+  else if(t.dataset.o!=null){var Q=S.quiz;if(Q.elegida!=null)return;Q.elegida=+t.dataset.o;Q.res.push(Q.elegida===Q.lista[Q.i].c);rastro("respuesta",{estacion:S.est,detalle:{pregunta:Q.lista[Q.i].id,bien:Q.elegida===Q.lista[Q.i].c}});pintar();var s=$("sigue");if(s){s.focus({preventScroll:true});s.scrollIntoView({block:"nearest",behavior:"smooth"})}}
   else if(t.dataset.paso!=null){var P=S.planta,i=+t.dataset.paso;var J=ORDEN[P.k],T=J.tramos[P.tramo];if(i===P.hechos.length){P.hechos.push(i);P.mal=null;if(P.hechos.length===T.p.length&&P.tramo===J.tramos.length-1){S.hechos[P.k]=true;guardar();rastro("juego",{estacion:"orden-"+P.k,detalle:{errores:P.errores}})}}else{P.errores++;P.mal=i}pintar();var b=$("sigue");if(b)b.focus({preventScroll:true})}
 });
 $("vista").addEventListener("click",function(ev){if(ev.target.id==="dipimp")window.print();var rz=ev.target.closest&&ev.target.closest("[data-raza]");if(rz&&S.vista==="raza"&&S.raza.resp==null){S.raza.resp=+rz.dataset.raza;S.raza.res.push(S.raza.resp===0);pintar();var sg=$("sigue");if(sg)sg.focus({preventScroll:true});return}var b=ev.target.closest&&ev.target.closest("[data-pei]");if(b&&S.vista==="pei"&&S.pei.fase==="destino")peiResp(+b.dataset.pei)});

@@ -107,6 +107,7 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
         <div class="campos">
           <label>Público <select id="lperfil"><option value="">Abierto: cada uno elige</option><option value="chico">Primeros pasos</option><option value="grande">Recorrido completo</option><option value="consumidor">Consumidor final</option><option value="productor">Productor</option><option value="trabajador">Trabajador rural</option><option value="esquilador">Esquilador</option><option value="consignatario">Consignatario</option><option value="industria">Industria</option><option value="tecnico">Técnico</option></select></label>
           <label>Cómo juegan <select id="lmodo"><option value="">Cada uno en su pantalla (para enviar)</option><option value="grupo">En la planta: todos juntos, sin equipos</option><option value="equipos">En la planta: todos juntos, en dos equipos</option><option value="elegir">En la planta: se elige al empezar</option></select></label>
+          <label>Para qué <select id="lrev"><option value="">Jugar</option><option value="1">Revisar: con botón para comentar</option></select></label>
           <label>Nombre del envío (opcional) <input id="lenvio" type="text" maxlength="60" placeholder="remate-marzo" autocomplete="off"></label>
         </div>
         <div class="enlace"><input id="lurl" type="text" readonly aria-label="Enlace armado"><button class="btn lleno" id="lcopiar">Copiar</button></div>
@@ -130,6 +131,12 @@ td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
           <button class="btn" id="csv">Descargar CSV</button></div>
         <div id="personas" class="tabla"></div>
       </div>
+      <div class="panel ancho">
+        <div class="cabp"><div><h2>Comentarios de revisión</h2><p class="nota">Lo que mandaron desde un enlace de revisión. "Copiar todo" los deja listos para pegar en el chat con Claude.</p></div>
+          <button class="btn" id="revcop">Copiar todo</button></div>
+        <div id="revisiones" class="tabla"></div>
+      </div>
+      <div class="panel ancho"><h2>Opiniones al terminar</h2><p class="nota" id="opres"></p><div id="opiniones" class="tabla"></div></div>
       <div class="panel ancho"><h2>Por envío</h2><p class="nota">Partidas según la etiqueta del enlace (<code>?envio=</code>). "Sin etiqueta" son las que entraron por el enlace común.</p><div id="envios" class="tabla"></div></div>
       <div class="panel ancho"><h2>Grupos</h2><p class="nota">Partidas jugadas en modo grupo.</p><div id="grupos" class="tabla"></div></div>
     </div>
@@ -224,6 +231,22 @@ function pintar(){
     {t:"Con sello",n:1,f:function(v){return num(v.con_sello)+" · "+pct(v.con_sello,v.partidas)}},
     {t:"Diplomas",n:1,f:function(v){return num(v.diplomas)+" · "+pct(v.diplomas,v.partidas)}}
   ],D.envios||[]);
+  tabla($("revisiones"),[
+    {t:"Fecha",f:function(r){return esc(r.creado)}},
+    {t:"Quién",f:function(r){return esc(r.revisor||"–")+(r.perfil?'<br><small>'+esc(r.perfil)+'</small>':'')}},
+    {t:"Dónde",f:function(r){return esc(r.pantalla||"–")+(r.ref?' · <b>'+esc(r.ref)+'</b>':'')+(r.titulo?'<br><small>'+esc(r.titulo)+'</small>':'')}},
+    {t:"Marca",f:function(r){return esc(r.marca||"–")}},
+    {t:"Comentario",f:function(r){return esc(r.comentario||"")}},
+    {t:"Estado",f:function(r){return esc(r.estado)}}
+  ],D.revisiones||[]);
+  var op=D.opiniones||[],on=[0,0,0,0];op.forEach(function(o){if(o.nota)on[o.nota]++});
+  $("opres").textContent=op.length?"Me encantó: "+on[3]+" · Estuvo bien: "+on[2]+" · Me aburrió: "+on[1]:"La pregunta aparece debajo del diploma.";
+  tabla($("opiniones"),[
+    {t:"Fecha",f:function(o){return esc(o.creado)}},
+    {t:"Perfil",f:function(o){return esc(o.perfil||"–")}},
+    {t:"Nota",f:function(o){return ["–","Me aburrió","Estuvo bien","Me encantó"][o.nota||0]}},
+    {t:"Lo que más sorprendió",f:function(o){return esc(o.texto||"")}}
+  ],op);
   tabla($("grupos"),[
     {t:"Grupo",f:function(g){return esc(g.grupo||"Sin nombre")}},
     {t:"Personas",n:1,f:function(g){return g.tam_grupo?num(g.tam_grupo):"–"}},
@@ -260,6 +283,12 @@ function cargar(){
 $("fclave").addEventListener("submit",function(e){e.preventDefault();sessionStorage.setItem("tableroClave",$("clave").value);$("clave").value="";cargar()});
 $("salir").addEventListener("click",function(){sessionStorage.removeItem("tableroClave");D=null;$("tablero").hidden=true;$("puerta").hidden=false});
 $("recargar").addEventListener("click",cargar);
+$("revcop").addEventListener("click",function(){
+  var b=this,r=(D&&D.revisiones)||[];if(!r.length)return;
+  var t="Comentarios de revisión de La ruta de la lana ("+r.length+")\n\n"+r.map(function(x){return "#"+x.id+" · "+x.creado+" · "+(x.revisor||"sin nombre")+(x.perfil?" · perfil "+x.perfil:"")+"\nDónde: "+(x.pantalla||"")+(x.ref?" · "+x.ref:"")+(x.titulo?" · "+x.titulo:"")+"\nMarca: "+(x.marca||"-")+"\nComentario: "+(x.comentario||"-")}).join("\n\n");
+  var ok=function(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar todo"},1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok);
+});
 $("minr").addEventListener("change",function(){if(D)pintarPreguntas()});
 $("filtros").addEventListener("click",function(e){
   var b=e.target.closest(".chip");if(!b)return;
@@ -285,7 +314,7 @@ document.addEventListener("mousemove",function(e){
 function etiqueta(s){return s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)}
 function enlace(){
   var q=[],p=$("lperfil").value,e=etiqueta($("lenvio").value);
-  if(p)q.push("perfil="+p);if($("lmodo").value)q.push("modo="+$("lmodo").value);if(e)q.push("envio="+e);
+  if(p)q.push("perfil="+p);if($("lmodo").value)q.push("modo="+$("lmodo").value);if(e)q.push("envio="+e);if($("lrev").value)q.push("revisor=1");
   var u=location.origin+"/"+(q.length?"?"+q.join("&"):"");
   $("lurl").value=u;
   $("lnota").textContent=e&&e!==$("lenvio").value?'En el tablero va a figurar como "'+e+'".':"";
@@ -293,7 +322,7 @@ function enlace(){
   $("lqr").innerHTML=c.createSvgTag({cellSize:4,margin:0,scalable:true});
   return {u:u,c:c,n:e||p||"abierto"};
 }
-$("lperfil").addEventListener("change",enlace);$("lmodo").addEventListener("change",enlace);$("lenvio").addEventListener("input",enlace);
+$("lrev").addEventListener("change",enlace);$("lperfil").addEventListener("change",enlace);$("lmodo").addEventListener("change",enlace);$("lenvio").addEventListener("input",enlace);
 $("lurl").addEventListener("focus",function(){this.select()});
 $("lcopiar").addEventListener("click",function(){
   var b=this,u=enlace().u,ok=function(){b.textContent="Copiado";setTimeout(function(){b.textContent="Copiar"},1600)};

@@ -3,7 +3,7 @@
 import { neon } from "@neondatabase/serverless";
 
 const sql = neon(process.env.DATABASE_URL);
-const TIPOS = ["respuesta", "trivia", "sello", "juego", "diploma"];
+const TIPOS = ["respuesta", "trivia", "sello", "juego", "diploma", "opinion"];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const json = (cuerpo, status = 200) =>
@@ -49,6 +49,16 @@ export default async (req) => {
     } catch (e) {
       return json({ error: "participante" }, 404);
     }
+    return json({ ok: true });
+  }
+  if (b.accion === "revision") {
+    // Comentarios del modo revisor (?revisor=1). Se leen en el tablero.
+    const marca = texto(b.marca, 40), comentario = texto(b.comentario, 1500);
+    if (!marca && !comentario) return json({ error: "vacio" }, 400);
+    await sql`
+      insert into revisiones (participante_id, revisor, perfil, pantalla, ref, titulo, marca, comentario)
+      values (${UUID.test(b.participante || "") ? b.participante : null}, ${texto(b.revisor, 60)}, ${texto(b.perfil, 60)},
+              ${texto(b.pantalla, 80)}, ${texto(b.ref, 60)}, ${texto(b.titulo, 300)}, ${marca}, ${comentario})`;
     return json({ ok: true });
   }
   return json({ error: "accion" }, 400);

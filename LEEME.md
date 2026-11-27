@@ -104,3 +104,11 @@ Cada pregunta tiene un nivel en la columna **nivel** de la pestaña Preguntas: `
 - El diploma dice el grado: el nivel alcanzado en todas las estaciones, hasta donde cada una lo permite.
 - Los niveles cargados al principio son una estimación (según a qué perfiles les toca cada pregunta). Conviene corregirlos a mano.
 - Al terminar una trivia se pueden repasar las preguntas erradas. El repaso no cambia el sello.
+
+## Enlace de revisión
+
+Agregando `?revisor=1` al enlace (o eligiendo "Revisar" en el armador del tablero) aparece un botón fijo "Comentar esto" en todas las pantallas. Quien revisa marca una opción (tiene un error, no se entiende, etc.), escribe si quiere y envía. El comentario guarda solo dónde estaba: la pregunta, el paso del recorrido, la curiosidad o el juego.
+
+Los comentarios quedan en la tabla `revisiones` de Neon y se ven en el tablero, en "Comentarios de revisión", con un botón "Copiar todo".
+
+Debajo del diploma hay una pregunta de opinión ("¿Qué te pareció?"); las respuestas se ven en el tablero, en "Opiniones al terminar".

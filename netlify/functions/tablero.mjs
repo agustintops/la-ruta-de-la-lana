@@ -25,7 +25,7 @@ export default async (req) => {
   const hasta = FECHA.test(u.searchParams.get("hasta") || "") ? u.searchParams.get("hasta") : "2999-12-31";
 
   // Todo se filtra por la fecha (hora de Uruguay) en que la persona o el grupo empezó a jugar.
-  const [totales, dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios] = await Promise.all([
+  const [totales, dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios, revisiones, opiniones] = await Promise.all([
     sql`
       with p as (
         select * from participantes
@@ -103,9 +103,22 @@ export default async (req) => {
       from participantes p left join eventos e on e.participante_id = p.id
       where (p.creado at time zone ${ZONA})::date between ${desde}::date and ${hasta}::date
       group by 1 order by 2 desc limit 100`,
+    sql`
+      select id, to_char(creado at time zone ${ZONA}, 'YYYY-MM-DD HH24:MI') as creado,
+             revisor, perfil, pantalla, ref, titulo, marca, comentario, estado
+      from revisiones
+      where (creado at time zone ${ZONA})::date between ${desde}::date and ${hasta}::date
+      order by id desc limit 1000`,
+    sql`
+      select to_char(e.creado at time zone ${ZONA}, 'YYYY-MM-DD HH24:MI') as creado, p.perfil,
+             (e.detalle->>'nota')::int as nota, e.detalle->>'texto' as texto
+      from eventos e join participantes p on p.id = e.participante_id
+      where e.tipo = 'opinion'
+        and (p.creado at time zone ${ZONA})::date between ${desde}::date and ${hasta}::date
+      order by e.creado desc limit 500`,
   ]);
 
-  return json({ totales: totales[0], dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios });
+  return json({ totales: totales[0], dias, perfiles, sellos, juegos, preguntas, personas, grupos, envios, revisiones, opiniones });
 };
 
 export const config = { path: "/api/tablero" };
