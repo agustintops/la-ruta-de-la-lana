@@ -94,3 +94,13 @@ Cada estación abre con tarjetas de curiosidades. Se editan en la pestaña **Cur
 - `icono`: el nombre de uno de los dibujos del juego (por ejemplo `ewe`, `scissors`, `factory`, `sun`). Si se deja vacío, se usa uno genérico.
 - `perfiles`: vacío para todos, o los perfiles separados por coma.
 - `estado`: `Borrador` o `Aprobada`, igual que en las preguntas.
+
+## Niveles de la trivia
+
+Cada pregunta tiene un nivel en la columna **nivel** de la pestaña Preguntas: `1` Inicial, `2` Intermedio, `3` Experto.
+
+- En cada estación se ofrecen los niveles que tengan al menos tres preguntas para ese perfil.
+- El sello guarda el nivel más alto aprobado. Un sello ganado jugando o haciendo el recorrido cuenta como Inicial.
+- El diploma dice el grado: el nivel alcanzado en todas las estaciones, hasta donde cada una lo permite.
+- Los niveles cargados al principio son una estimación (según a qué perfiles les toca cada pregunta). Conviene corregirlos a mano.
+- Al terminar una trivia se pueden repasar las preguntas erradas. El repaso no cambia el sello.

@@ -53,6 +53,7 @@ export default async () => {
       const n = ["a", "b", "c", "d"].filter((l) => p["opcion_" + l]).map((l) => (p["por_que_no_" + l] || "").trim());
       preguntas.push({ id: p.id, cat: p.categoria, t: p.titulo, q: p.pregunta, o, c, e: p.explicacion, f: p.fuente,
         n: n.some(Boolean) ? n : undefined, ec: (p.explicacion_chicos || "").trim() || undefined,
+        nv: parseInt(p.nivel, 10) || undefined,
         p: (p.perfiles || "").split(",").map((x) => x.trim()).filter(Boolean) });
     }
     const recorridos = {};
